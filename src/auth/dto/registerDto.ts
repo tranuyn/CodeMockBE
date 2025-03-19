@@ -1,7 +1,8 @@
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { PrimaryGeneratedColumn } from 'typeorm';
 
-export class CreateUserDto {
+export class RegisterDto {
   @PrimaryGeneratedColumn('uuid') // Hoặc 'increment' nếu bạn muốn ID số tự tăng
   id: string;
 
@@ -17,16 +18,21 @@ export class CreateUserDto {
   @IsString()
   role: string;
 
+  @IsOptional()
   password: string;
 
+  @IsOptional()
   account_type: string;
 
   @IsNotEmpty()
   is_active: boolean;
 
+  @IsOptional()
   code_id: string;
 
+  @IsOptional()
   code_expired: Date;
 
+  @IsString()
   phone: string;
 }
