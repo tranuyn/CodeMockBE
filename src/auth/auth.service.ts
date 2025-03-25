@@ -20,23 +20,16 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async signIn(
-    email: string,
-    pass: string,
-  ): Promise<{ access_token: string; user: Object }> {
-    const user = await this.userService.findByEmail(email);
-    if (!(await comparePasswordHelper(pass, user.password))) {
-      throw new UnauthorizedException();
-    }
+  async login(user: any) {
     const payload = {
+      email: user.email,
       sub: user.id,
       username: user.username,
-      email: user.email,
       role: user.role,
     };
     const { password, ...userWithoutPassword } = user;
     return {
-      access_token: await this.jwtService.signAsync(payload),
+      access_token: this.jwtService.sign(userWithoutPassword),
       user: userWithoutPassword,
     };
   }
@@ -53,5 +46,18 @@ export class AuthService {
       password: hashPassword,
     });
     return await this.userRepository.save(newUser);
+  }
+
+  async validateUser(email: string, pass: string): Promise<any> {
+    const user = await this.userService.findByEmail(email);
+    if (!user) {
+      throw new UnauthorizedException('Tài khoản email không tồn tại');
+    }
+    if (!(await comparePasswordHelper(pass, user.password))) {
+      throw new UnauthorizedException('Mật khẩu không hợp lệ');
+    } else {
+      const { password, ...result } = user;
+      return result;
+    }
   }
 }
