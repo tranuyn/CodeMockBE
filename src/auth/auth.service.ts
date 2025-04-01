@@ -10,6 +10,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/modules/user/entity/user.entity';
 import { Repository } from 'typeorm';
 import { comparePasswordHelper, hashPasswordHelper } from 'src/helpers/util';
+import { v4 as uuidv4 } from 'uuid';
+import dayjs from 'dayjs';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +21,7 @@ export class AuthService {
     private readonly userRepository: Repository<User>,
     private userService: UserService,
     private jwtService: JwtService,
+    private readonly mailerService: MailerService,
   ) {}
 
   async login(user: any) {
@@ -43,7 +47,22 @@ export class AuthService {
     const hashPassword = await hashPasswordHelper(RegisterDto.password);
     const newUser = this.userRepository.create({
       ...RegisterDto,
+      is_active: false,
+      code_id: uuidv4().slice(6),
+      code_expired: dayjs().add(15, 'minutes'),
       password: hashPassword,
+    });
+
+    // send email
+    await this.mailerService.sendMail({
+      to: RegisterDto.email,
+      subject: 'Activate your account at CodeMock ✔',
+      template: 'mail_template_register',
+      context: {
+        // ✏️ filling curly brackets with content
+        name: RegisterDto.username,
+        activationCode: newUser.code_id,
+      },
     });
     return await this.userRepository.save(newUser);
   }
