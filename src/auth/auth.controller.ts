@@ -7,6 +7,7 @@ import {
   Post,
   Request,
   UseGuards,
+  Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './passport/jwt-auth.guard';
@@ -14,6 +15,8 @@ import { RegisterDto } from './dto/registerDto';
 import { LocalAuthGuard } from './passport/local-auth.guard';
 import { Public } from 'src/decorator/customize';
 import { MailerService } from '@nestjs-modules/mailer';
+import { SignInDto } from './dto/signInDto';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -25,8 +28,11 @@ export class AuthController {
   @Post('login')
   @Public() // Not check logic related to JWT
   @UseGuards(LocalAuthGuard)
-  async login(@Request() req) {
-    return this.authService.login(req.user);
+  async login(
+    @Body() signInDto: SignInDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService.login(signInDto, res);
   }
 
   @HttpCode(HttpStatus.OK)

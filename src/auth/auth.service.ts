@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { UserService } from '../modules/user/user.service';
 import { JwtService } from '@nestjs/jwt';
@@ -13,6 +14,7 @@ import { comparePasswordHelper, hashPasswordHelper } from 'src/helpers/util';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 import { MailerService } from '@nestjs-modules/mailer';
+import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -24,16 +26,41 @@ export class AuthService {
     private readonly mailerService: MailerService,
   ) {}
 
-  async login(user: any) {
+  async login(param: any, res: Response) {
+    const { email, password } = param;
+    const user = await this.userService.findByEmail(email);
+    if (!user) {
+      throw new NotFoundException(
+        `Email ${email} không tồn tại trong hệ thống.`,
+      );
+    }
+    const isPasswordValid = await comparePasswordHelper(
+      password,
+      user.password,
+    );
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Mật khẩu không chính xác.');
+    }
+
     const payload = {
-      email: user.email,
       sub: user.id,
+      email: user.email,
       username: user.username,
-      role: user.role,
     };
-    const { password, ...userWithoutPassword } = user;
+
+    const access_token = this.jwtService.sign(payload);
+
+    res.cookie('token', access_token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 ngày
+    });
+
+    const { password: _, ...userWithoutPassword } = user;
+
     return {
-      access_token: this.jwtService.sign(userWithoutPassword),
+      access_token,
       user: userWithoutPassword,
     };
   }
