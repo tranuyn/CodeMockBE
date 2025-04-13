@@ -17,6 +17,7 @@ import { Public } from 'src/decorator/customize';
 import { MailerService } from '@nestjs-modules/mailer';
 import { SignInDto } from './dto/signInDto';
 import { Response } from 'express';
+import { VerifyCodeDto } from './dto/verify-code.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -35,10 +36,14 @@ export class AuthController {
     return this.authService.login(signInDto, res);
   }
 
+  @Public()
   @HttpCode(HttpStatus.OK)
   @Post('register')
-  register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  async register(
+    @Body() registerDto: RegisterDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService.register(registerDto, res);
   }
 
   @Public() // Not check JWT
@@ -74,5 +79,12 @@ export class AuthController {
       console.error('Failed to send email:', error);
       throw new Error(error);
     }
+  }
+
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @Post('verify-code')
+  async verifyCode(@Body() verifyDto: VerifyCodeDto) {
+    return this.authService.verifyCode(verifyDto);
   }
 }

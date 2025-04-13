@@ -99,7 +99,7 @@ export class UserService {
   //delete user
   async remove(id: string): Promise<void> {
     const user = await this.findOne(id);
-    const result = await this.userRepository.delete(user);
+    const result = await this.userRepository.delete(user.id);
     if (result.affected === 0) throw new Error(`User with ID ${id} not found`);
   }
 }

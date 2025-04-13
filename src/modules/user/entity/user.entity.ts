@@ -31,4 +31,13 @@ export class User {
 
   @Column({ nullable: true })
   phone: string;
+
+  @Column({ nullable: true })
+  profession: string;
+
+  @Column({ nullable: true })
+  educationLevel: string;
+
+  @Column('text', { array: true, nullable: true })
+  technologies: string[];
 }

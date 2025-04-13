@@ -24,15 +24,15 @@ export class RegisterDto {
   @IsOptional()
   account_type: string;
 
-  @IsNotEmpty()
-  is_active: boolean;
+  @IsOptional()
+  profession: string;
 
   @IsOptional()
-  code_id: string;
+  educationLevel: string;
 
   @IsOptional()
-  code_expired: Date;
+  technologies: string[];
 
-  @IsString()
+  @IsOptional()
   phone: string;
 }
