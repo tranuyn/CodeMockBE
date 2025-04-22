@@ -12,6 +12,9 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
 import { join } from 'path';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { MajorModule } from './modules/major/major.module';
+import { LevelModule } from './modules/level/level.module';
+import { TechnologyModule } from './modules/technology/level.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -34,6 +37,9 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
     UserModule,
     AuthModule,
     MailerModule,
+    MajorModule,
+    LevelModule,
+    TechnologyModule,
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({

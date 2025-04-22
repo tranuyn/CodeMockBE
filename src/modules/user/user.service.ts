@@ -1,16 +1,23 @@
-import { CreateUserDto } from './dto/create-user-dto';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entity/user.entity';
-import { FindManyOptions, Repository } from 'typeorm';
+import { FindManyOptions, DataSource, Repository } from 'typeorm';
 import { hashPasswordHelper } from 'src/helpers/util';
 import aqp from 'api-query-params';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { Mentor } from './entity/mentor.entity';
+import { Candidate } from './entity/candidate.entity';
+import { Technology } from '../technology/technology.entity';
+import { Major } from '../major/major.entity';
+import { Level } from '../level/level.entity';
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private userRepository: Repository<User>,
+    @InjectRepository(Major) private majorRepo: Repository<Major>,
+    private dataSource: DataSource,
+    @InjectRepository(Level) private levelRepo: Repository<Level>,
+    @InjectRepository(Technology) private techRepo: Repository<Technology>,
   ) {}
 
   async isEmailExist(email: string): Promise<boolean> {
@@ -19,7 +26,7 @@ export class UserService {
   }
 
   //create user
-  async create(CreateUserDto: CreateUserDto): Promise<User> {
+  async create(CreateUserDto: Partial<User>): Promise<User> {
     const isExist = await this.isEmailExist(CreateUserDto.email);
     if (isExist)
       throw new BadRequestException(
@@ -34,7 +41,7 @@ export class UserService {
   }
 
   //get all users
-  async findAll(): Promise<User[]> {
+  async findAll(): Promise<User[] | Candidate[] | Mentor[]> {
     return await this.userRepository.find();
   }
 
@@ -46,7 +53,7 @@ export class UserService {
     const totalItems = await this.userRepository.count(filter);
     const totalPages = Math.ceil(totalItems / limit);
     const pageNumber = Math.min(totalPages, Math.ceil(skip / limit));
-    const options: FindManyOptions<User> = {
+    const options: FindManyOptions<User | Mentor | Candidate> = {
       where: filter,
       take: limit,
       skip: skip,
@@ -62,44 +69,112 @@ export class UserService {
     };
   }
 
-  //get user by id
-  async findOne(id: string): Promise<User | undefined> {
-    const result = await this.userRepository.findOneBy({ id });
-    if (!result) {
+  // user.service.ts
+  async findOne(id: string): Promise<User | Mentor | Candidate> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['majors', 'levels', 'technologies'],
+    });
+    if (!user) {
       throw new BadRequestException(`Không tìm thấy người dùng với id ${id}`);
     }
-    return result;
+    return user;
   }
 
-  async findByEmail(email: string): Promise<User | undefined> {
-    const result = await this.userRepository.findOneBy({ email });
-    if (!result) {
+  async findByEmail(email: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { email },
+      relations: ['majors', 'levels', 'technologies'],
+    });
+    if (!user)
       throw new BadRequestException(
         `Không tìm thấy người dùng với email ${email}`,
       );
-    }
-    return result;
+    return user;
   }
 
   //update user
   async update(
     id: string,
-    updateUserDto: UpdateUserDto,
-  ): Promise<User | undefined> {
-    const user = await this.findOne(id);
-    if (!user) throw new BadRequestException(`Không tìm thấy người dùng.`);
+    dto: Partial<User> & {
+      majorIds?: string[];
+      levelIds?: string[];
+      technologyIds?: string[];
+    },
+  ): Promise<User> {
+    // tách các mảng ID ra
+    const { majorIds, levelIds, technologyIds, ...rest } = dto;
 
-    // Cập nhật các thuộc tính của user
-    Object.assign(user, updateUserDto);
+    // tạo object partial để save
+    const toSave: any = { id, ...rest };
 
-    // Lưu người dùng đã cập nhật vào cơ sở dữ liệu
-    return await this.userRepository.save(user);
+    if (majorIds) {
+      // mảng stub Major chỉ với id
+      toSave.majors = majorIds.map((mId) => ({ id: mId }));
+    }
+    if (levelIds) {
+      toSave.levels = levelIds.map((lId) => ({ id: lId }));
+    }
+    if (technologyIds) {
+      toSave.technologies = technologyIds.map((tId) => ({ id: tId }));
+    }
+
+    // lưu (TypeORM sẽ tự xoá/insert vào user_majors, user_levels, user_technologies)
+    await this.userRepository.save(toSave);
+    this.updateUserCount();
+    return this.userRepository.findOneOrFail({
+      where: { id },
+      relations: ['majors', 'levels', 'technologies'],
+    });
   }
 
-  //delete user
   async remove(id: string): Promise<void> {
     const user = await this.findOne(id);
     const result = await this.userRepository.delete(user.id);
     if (result.affected === 0) throw new Error(`User with ID ${id} not found`);
+  }
+
+  async updateUserCount() {
+    await this.majorRepo
+      .createQueryBuilder()
+      .update()
+      .set({
+        user_count: () => `
+    (
+      SELECT COUNT(*)
+      FROM user_majors um
+      WHERE um."majorId" = id   
+    )
+  `,
+      })
+      .execute();
+
+    await this.levelRepo
+      .createQueryBuilder() // 1) bind Major entity với alias là "m"
+      .update() // 2) khởi tạo UpdateQueryBuilder trên entity đã bind
+      .set({
+        user_count: () => `
+      (
+        SELECT COUNT(*)
+        FROM user_levels um
+        WHERE um."levelId" = id
+      )
+    `,
+      })
+      .execute();
+
+    await this.techRepo
+      .createQueryBuilder() // 1) bind Major entity với alias là "m"
+      .update() // 2) khởi tạo UpdateQueryBuilder trên entity đã bind
+      .set({
+        user_count: () => `
+      (
+        SELECT COUNT(*)
+        FROM user_technologies um
+        WHERE um."technologyId" = id
+      )
+    `,
+      })
+      .execute();
   }
 }
