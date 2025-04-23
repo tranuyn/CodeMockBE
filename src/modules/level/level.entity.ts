@@ -19,6 +19,6 @@ export class Level {
   @Column({ default: 0 })
   user_count: number;
 
-  @ManyToMany(() => User, (user) => user.majors)
+  @ManyToMany(() => User, (user) => user.levels)
   users: User[];
 }

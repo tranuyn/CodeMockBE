@@ -1,3 +1,4 @@
+import { Technology } from './../../technology/technology.entity';
 import {
   Column,
   Entity,
@@ -9,7 +10,6 @@ import {
   ManyToMany,
 } from 'typeorm';
 import { ExperienceDetail } from 'src/modules/common_entity/experience_detail.entity';
-import { Technology } from 'src/modules/technology/technology.entity';
 import { Major } from 'src/modules/major/major.entity';
 import { Level } from 'src/modules/level/level.entity';
 
@@ -56,7 +56,8 @@ export class User {
   experiences: ExperienceDetail[];
 
   // Dùng enum rõ ràng cho LEVEL
-  @ManyToMany(() => Level, { cascade: ['insert'] })
+
+  @ManyToMany(() => Level, (level) => level.users, { cascade: ['insert'] })
   @JoinTable({ name: 'user_levels' })
   levels: Level[];
 
@@ -66,7 +67,9 @@ export class User {
   @Column({ nullable: true })
   educationLevel: string;
 
-  @ManyToMany(() => Technology, { cascade: ['insert'] })
+  @ManyToMany(() => Technology, (Technology) => Technology.users, {
+    cascade: ['insert'],
+  })
   @JoinTable({ name: 'user_technologies' })
   technologies: Technology[];
 
