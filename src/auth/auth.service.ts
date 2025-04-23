@@ -73,7 +73,7 @@ export class AuthService {
     };
   }
 
-  async register(RegisterDto: RegisterDto, res: Response) {
+  async register(RegisterDto: Partial<User>, res: Response) {
     const isExist = await this.userService.isEmailExist(RegisterDto.email);
     if (isExist)
       throw new BadRequestException(

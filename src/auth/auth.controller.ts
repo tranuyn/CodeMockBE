@@ -18,6 +18,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { SignInDto } from './dto/signInDto';
 import { Response } from 'express';
 import { VerifyCodeDto } from './dto/verify-code.dto';
+import { User } from 'src/modules/user/entity/user.entity';
 
 @Controller('auth')
 export class AuthController {
@@ -40,7 +41,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('register')
   async register(
-    @Body() registerDto: RegisterDto,
+    @Body() registerDto: Partial<User>,
     @Res({ passthrough: true }) res: Response,
   ) {
     return this.authService.register(registerDto, res);

@@ -1,5 +1,9 @@
+import { Public } from 'src/decorator/customize';
 import { CreateUserDto } from './dto/create-user-dto';
+import { UpdateMentorDto } from './dto/update-mentor-dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Mentor } from './entity/mentor.entity';
+import { User } from './entity/user.entity';
 import { UserService } from './user.service';
 import {
   Body,
@@ -17,7 +21,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('create')
-  async createUser(@Body() createUserDto: CreateUserDto) {
+  async createUser(@Body() createUserDto: Partial<User>) {
     await this.userService.create(createUserDto);
     return { message: 'User created successfully' };
   }
@@ -43,8 +47,9 @@ export class UserController {
     return this.userService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  @Public()
+  @Patch('/:id')
+  update(@Param('id') id: string, @Body() updateUserDto: Partial<User>) {
     return this.userService.update(id, updateUserDto);
   }
 
