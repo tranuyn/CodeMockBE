@@ -8,12 +8,14 @@ import {
   JoinColumn,
   JoinTable,
   ManyToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { ExperienceDetail } from 'src/modules/common_entity/experience_detail.entity';
 import { Major } from 'src/modules/major/major.entity';
 import { Level } from 'src/modules/level/level.entity';
 
-@Entity()
+@Entity({ name: 'user' })
 @TableInheritance({ column: { type: 'varchar', name: 'role' } })
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -93,4 +95,10 @@ export class User {
 
   @Column({ nullable: true })
   address: string;
+
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
 }
