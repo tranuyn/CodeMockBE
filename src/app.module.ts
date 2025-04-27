@@ -15,6 +15,8 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { MajorModule } from './modules/major/major.module';
 import { LevelModule } from './modules/level/level.module';
 import { TechnologyModule } from './modules/technology/level.module';
+import { SupabaseModule } from './modules/supabase/supabase.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -40,6 +42,7 @@ import { TechnologyModule } from './modules/technology/level.module';
     MajorModule,
     LevelModule,
     TechnologyModule,
+    SupabaseModule,
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({

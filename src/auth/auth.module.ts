@@ -9,10 +9,12 @@ import { User } from 'src/modules/user/entity/user.entity';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './passport/local.strategy';
 import { JwtStrategy } from './passport/jwt.strategy';
+import { SupabaseModule } from 'src/modules/supabase/supabase.module';
 
 @Module({
   imports: [
     UserModule,
+    SupabaseModule,
     TypeOrmModule.forFeature([User]),
     JwtModule.registerAsync({
       imports: [ConfigModule],

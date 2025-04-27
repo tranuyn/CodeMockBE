@@ -1,83 +1,135 @@
 import { Level } from './level.entity';
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { FindManyOptions, Repository } from 'typeorm';
-import aqp from 'api-query-params';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 @Injectable()
 export class LevelService {
   constructor(
-    @InjectRepository(Level)
-    private readonly repository: Repository<Level>,
+    @Inject('SUPABASE_CLIENT')
+    private readonly supabase: SupabaseClient,
   ) {}
 
   async isNameExist(name: string): Promise<boolean> {
-    const major = await this.repository.findOne({ where: { name } });
-    return !!major;
+    const { data, error } = await this.supabase
+      .from('levels')
+      .select('id')
+      .eq('name', name)
+      .maybeSingle();
+
+    return !!data;
   }
 
-  //create
+  // Create
   async create(createDto: Partial<Level>): Promise<Level> {
     const isExist = await this.isNameExist(createDto.name);
-    if (isExist)
+    if (isExist) {
       throw new BadRequestException(
         `Tên ${createDto.name} đã tồn tại. Vui lòng sử dụng tên khác`,
       );
-    const newLevel = this.repository.create(createDto);
-    const saved = await this.repository.save(newLevel);
-    return saved;
+    }
+
+    const { data, error } = await this.supabase
+      .from('levels')
+      .insert(createDto)
+      .select()
+      .single();
+
+    if (error) throw new BadRequestException(error.message);
+    return data as Level;
   }
 
-  //get all
+  // Get all
   async findAll(): Promise<Level[]> {
-    return this.repository.find({
-      relations: ['users'],
-    });
+    const { data, error } = await this.supabase.from('levels').select(`
+        *,
+        users:user_levels(
+          user_id(*)
+        )
+      `);
+
+    if (error) throw new BadRequestException(error.message);
+    return data as Level[];
   }
 
-  async findByQuery(query: any) {
-    const { filter, limit, skip, sort } = aqp(query);
-    // const query = aqp(
-    //   'status=sent&timestamp>2016-01-01&author.firstName=/john/i&limit=100&skip=50&sort=-timestamp&populate=logs&fields=id,logs.ip'
-    // );
-    const totalItems = await this.repository.count(filter);
-    const totalPages = Math.ceil(totalItems / limit);
-    const pageNumber = Math.min(totalPages, Math.ceil(skip / limit));
-    const options: FindManyOptions<Level> = {
-      where: filter,
-      take: limit,
-      skip: skip,
-      order: sort,
-    };
-    const levels = await this.repository.find(options);
-    return {
-      totalItems: totalItems,
-      totalPages: totalPages,
-      pageNumber: pageNumber,
-      levels: levels,
-    };
-  }
-
-  //get major by id
+  // Get level by id
   async findOne(id: string): Promise<Level> {
-    const result = await this.repository.findOne({ where: { id } });
-    if (!result) {
+    const { data, error } = await this.supabase
+      .from('levels')
+      .select(
+        `
+        *,
+        users:user_levels(
+          user_id(*)
+        )
+      `,
+      )
+      .eq('id', id)
+      .single();
+
+    if (error || !data) {
       throw new BadRequestException(`Không tìm thấy cấp bậc với id ${id}`);
     }
-    return result;
+    return data as Level;
   }
 
-  //update major
+  // Update level
   async update(id: string, updateDto: Partial<Level>): Promise<Level> {
-    const major = await this.findOne(id);
-    if (!major) throw new BadRequestException(`Không tìm thấy chuyên ngành.`);
-    return await this.repository.save(major);
+    const level = await this.findOne(id);
+    if (!level) {
+      throw new BadRequestException('Không tìm thấy cấp bậc.');
+    }
+
+    // If we're updating the name, check if it exists
+    if (updateDto.name && updateDto.name !== level.name) {
+      const isExist = await this.isNameExist(updateDto.name);
+      if (isExist) {
+        throw new BadRequestException(
+          `Tên ${updateDto.name} đã tồn tại. Vui lòng sử dụng tên khác`,
+        );
+      }
+    }
+
+    const { data, error } = await this.supabase
+      .from('levels')
+      .update({
+        ...updateDto,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw new BadRequestException(error.message);
+    return data as Level;
   }
 
-  //delete
+  // Delete level
   async remove(id: string): Promise<void> {
-    const major = await this.findOne(id);
-    const result = await this.repository.delete(major.id);
-    if (result.affected === 0) throw new Error(`Level with ID ${id} not found`);
+    const { error } = await this.supabase.from('levels').delete().eq('id', id);
+
+    if (error) {
+      throw new BadRequestException(
+        `Level with ID ${id} not found or could not be deleted`,
+      );
+    }
+  }
+
+  // Update user count
+  async updateUserCount(id: string): Promise<void> {
+    // Get the count of users for this level
+    const { count, error: countError } = await this.supabase
+      .from('user_levels')
+      .select('*', { count: 'exact', head: true })
+      .eq('level_id', id);
+
+    if (countError) throw new BadRequestException(countError.message);
+
+    // Update the user_count field
+    const { error: updateError } = await this.supabase
+      .from('levels')
+      .update({ user_count: count || 0 })
+      .eq('id', id);
+
+    if (updateError) throw new BadRequestException(updateError.message);
   }
 }
