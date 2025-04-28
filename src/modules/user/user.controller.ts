@@ -42,6 +42,7 @@ export class UserController {
     return this.userService.findByQuery(query);
   }
 
+  @Public()
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.userService.findOne(id);

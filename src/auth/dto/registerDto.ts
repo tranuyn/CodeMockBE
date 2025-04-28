@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { PrimaryGeneratedColumn } from 'typeorm';
+import { PrimaryGeneratedColumn, Timestamp } from 'typeorm';
 
 export class RegisterDto {
   @PrimaryGeneratedColumn('uuid') // Hoặc 'increment' nếu bạn muốn ID số tự tăng
@@ -25,14 +25,26 @@ export class RegisterDto {
   account_type: string;
 
   @IsOptional()
-  profession: string;
-
-  @IsOptional()
   educationLevel: string;
 
   @IsOptional()
   technologies: string[];
 
   @IsOptional()
+  majors: string[];
+
+  @IsOptional()
+  levels: string[];
+
+  @IsOptional()
   phone: string;
+
+  @IsOptional()
+  is_active: boolean;
+
+  @IsOptional()
+  code_id: string;
+
+  @IsOptional()
+  code_expired: Date;
 }

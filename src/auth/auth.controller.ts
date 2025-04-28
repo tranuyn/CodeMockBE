@@ -41,7 +41,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('register')
   async register(
-    @Body() registerDto: Partial<User>,
+    @Body() registerDto: RegisterDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     return this.authService.register(registerDto, res);

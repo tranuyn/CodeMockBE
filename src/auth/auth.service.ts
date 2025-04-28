@@ -1,3 +1,4 @@
+import { updateUserCount } from './../helpers/update_user_mlv';
 import {
   BadRequestException,
   Injectable,
@@ -18,6 +19,9 @@ import { Response } from 'express';
 import { VerifyCodeDto } from './dto/verify-code.dto';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import { Major } from 'src/modules/major/major.entity';
+import { Level } from 'src/modules/level/level.entity';
+import { Technology } from 'src/modules/technology/technology.entity';
 
 @Injectable()
 export class AuthService {
@@ -27,6 +31,9 @@ export class AuthService {
     private userService: UserService,
     private jwtService: JwtService,
     private readonly mailerService: MailerService,
+    @InjectRepository(Major) private majorRepo: Repository<Major>,
+    @InjectRepository(Level) private levelRepo: Repository<Level>,
+    @InjectRepository(Technology) private techRepo: Repository<Technology>,
   ) {}
 
   async login(param: any, res: Response) {
@@ -72,45 +79,60 @@ export class AuthService {
       user: userWithoutSensitiveInfo,
     };
   }
-
-  async register(RegisterDto: Partial<User>, res: Response) {
-    const isExist = await this.userService.isEmailExist(RegisterDto.email);
-    if (isExist)
+  async register(registerDto: RegisterDto, res: Response) {
+    // 1. Kiểm tra email đã tồn tại
+    const exists = await this.userService.isEmailExist(registerDto.email);
+    if (exists) {
       throw new BadRequestException(
-        `Email ${RegisterDto.email} đã tồn tại. Vui lòng sử dụng email khác`,
+        `Email ${registerDto.email} đã tồn tại. Vui lòng sử dụng email khác.`,
       );
-    const hashPassword = await hashPasswordHelper(RegisterDto.password);
+    }
+
+    // 2. Hash mật khẩu
+    const hashedPassword = await hashPasswordHelper(registerDto.password);
+
+    // 3. Chuẩn bị code kích hoạt
+    const activationCode = uuidv4().replace(/-/g, '').slice(0, 6);
+    //const activationExpires = dayjs().utc().add(15, 'minutes').toDate();
+
+    // 4. Tách các trường relation ra ngoài
+    const { majors, levels, technologies, ...rest } = registerDto;
+
     dayjs.extend(utc);
     dayjs.extend(timezone);
+    // 5. Tạo entity User mới (chưa lưu)
     const newUser = this.userRepository.create({
-      ...RegisterDto,
+      ...rest,
+      password: hashedPassword,
       is_active: false,
-      code_id: uuidv4().replace(/-/g, '').slice(0, 6),
+      code_id: activationCode,
       code_expired: dayjs().utc().add(15, 'minutes').toDate(),
-      password: hashPassword,
+      // gán các relation nếu có
+      majors: majors?.map((id) => ({ id })) ?? [],
+      levels: levels?.map((id) => ({ id })) ?? [],
+      technologies: technologies?.map((id) => ({ id })) ?? [],
     });
 
-    // send email
+    // 6. Lưu user vào database
+    await this.userRepository.save(newUser);
+
+    // 7. Cập nhật lại số lượng user trên từng major/level/technology
+    await updateUserCount(this.majorRepo, this.levelRepo, this.techRepo);
+
+    // 8. Gửi email kích hoạt
     await this.mailerService.sendMail({
-      to: RegisterDto.email,
+      to: registerDto.email,
       subject: 'Activate your account at CodeMock ✔',
       template: 'mail_template_register',
       context: {
-        // ✏️ filling curly brackets with content
-        name: RegisterDto.username,
-        activationCode: newUser.code_id,
+        name: registerDto.username,
+        activationCode,
       },
     });
-    await this.userRepository.save(newUser);
 
-    const {
-      password: _password,
-      code_id,
-      code_expired,
-      ...userWithoutSensitiveInfo
-    } = newUser;
-
-    return userWithoutSensitiveInfo;
+    // 9. Trả về dữ liệu không chứa thông tin nhạy cảm
+    const { password: _pw, code_id, code_expired, ...safeUser } = newUser;
+    return safeUser;
   }
 
   async validateUser(email: string, pass: string): Promise<any> {
