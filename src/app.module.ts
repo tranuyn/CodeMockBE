@@ -56,7 +56,7 @@ import { TechnologyModule } from './modules/technology/level.module';
           from: '"No Reply" <no-reply@localhost>',
         },
         template: {
-          dir: join(__dirname, 'mail_template/'),
+          dir: join(__dirname, '../mail_template'),
           adapter: new HandlebarsAdapter(), // or new PugAdapter() or new EjsAdapter()
           options: {
             strict: true,
