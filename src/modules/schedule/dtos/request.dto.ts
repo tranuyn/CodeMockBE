@@ -1,7 +1,7 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class CreateScheduleDto {
-  @IsNumber()
+  @IsString()
   userId: string;
 
   @IsString()

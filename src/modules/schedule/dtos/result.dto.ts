@@ -1,5 +1,5 @@
 export class ScheduleResultDto {
-  scheduleId: number;
+  scheduleId: string;
   userId: string;
   user_role: string;
   note?: string;

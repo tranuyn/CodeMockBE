@@ -7,13 +7,14 @@ import { Public } from 'src/decorator/customize';
 export class ScheduleController {
   constructor(private readonly scheduleService: ScheduleService) {}
 
+  @Public()
   @Post()
   create(@Body() dto: CreateScheduleDto) {
     return this.scheduleService.create(dto);
   }
 
   @Put(':id')
-  update(@Param('id') id: number, @Body() dto: UpdateScheduleDto) {
+  update(@Param('id') id: string, @Body() dto: UpdateScheduleDto) {
     return this.scheduleService.update(id, dto);
   }
 

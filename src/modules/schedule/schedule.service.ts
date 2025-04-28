@@ -16,7 +16,7 @@ export class ScheduleService {
     return await this.scheduleRepo.save(schedule);
   }
 
-  async update(id: number, dto: UpdateScheduleDto): Promise<Schedule> {
+  async update(id: string, dto: UpdateScheduleDto): Promise<Schedule> {
     const schedule = await this.scheduleRepo.findOneBy({ scheduleId: id });
     if (!schedule) {
       throw new Error(`Schedule with ID ${id} not found`);

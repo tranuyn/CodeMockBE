@@ -4,7 +4,7 @@ import { InterviewSession } from 'src/modules/interview_session/entities/intervi
 @Entity()
 export class Schedule {
   @PrimaryGeneratedColumn()
-  scheduleId: number;
+  scheduleId: string;
 
   @Column()
   userId: string;
