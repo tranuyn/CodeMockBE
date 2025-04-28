@@ -8,7 +8,7 @@ import { UserService } from '../modules/user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/registerDto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/modules/user/entity/user.entity';
+import { User } from 'src/modules/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { comparePasswordHelper, hashPasswordHelper } from 'src/helpers/util';
 import { v4 as uuidv4 } from 'uuid';

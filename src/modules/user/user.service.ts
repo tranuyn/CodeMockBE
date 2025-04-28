@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './entity/user.entity';
+import { User } from './entities/user.entity';
 import { FindManyOptions, DataSource, Repository } from 'typeorm';
 import { hashPasswordHelper } from 'src/helpers/util';
 import aqp from 'api-query-params';
-import { Mentor } from './entity/mentor.entity';
-import { Candidate } from './entity/candidate.entity';
+import { Mentor } from './entities/mentor.entity';
+import { Candidate } from './entities/candidate.entity';
 import { Technology } from '../technology/technology.entity';
 import { Major } from '../major/major.entity';
 import { Level } from '../level/level.entity';

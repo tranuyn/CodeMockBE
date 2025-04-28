@@ -1,8 +1,9 @@
 import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { CreateScheduleDto, UpdateScheduleDto } from './dtos/request.dto';
 import { ScheduleService } from './schedule.service';
+import { Public } from 'src/decorator/customize';
 
-@Controller('schedules')
+@Controller('schedule')
 export class ScheduleController {
   constructor(private readonly scheduleService: ScheduleService) {}
 
@@ -16,7 +17,13 @@ export class ScheduleController {
     return this.scheduleService.update(id, dto);
   }
 
-  @Get(':userId')
+  @Public()
+  @Get()
+  findAll() {
+    return this.scheduleService.findAll();
+  }
+
+  @Get('user/:userId')
   findByUser(@Param('userId') userId: number) {
     return this.scheduleService.findByUserId(userId);
   }

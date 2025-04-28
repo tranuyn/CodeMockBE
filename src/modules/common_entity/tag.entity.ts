@@ -6,7 +6,7 @@ import {
   OneToMany,
   JoinTable,
 } from 'typeorm';
-import { User } from 'src/modules/user/entity/user.entity';
+import { User } from 'src/modules/user/entities/user.entity';
 
 @Entity('technology')
 export class Technology {

@@ -15,7 +15,7 @@ export class ScheduleService {
   }
 
   update(id: number, dto: UpdateScheduleDto) {
-    const index = this.schedules.findIndex(s => s.scheduleId === id);
+    const index = this.schedules.findIndex((s) => s.scheduleId === id);
     if (index === -1) return null;
 
     this.schedules[index] = { ...this.schedules[index], ...dto };
@@ -23,6 +23,10 @@ export class ScheduleService {
   }
 
   findByUserId(userId: number) {
-    return this.schedules.find(s => s.userId === userId);
+    return this.schedules.find((s) => s.userId === userId);
+  }
+
+  findAll() {
+    return this.schedules;
   }
 }

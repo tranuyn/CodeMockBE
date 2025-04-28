@@ -1,4 +1,4 @@
-import { User } from 'src/modules/user/entity/user.entity';
+import { User } from 'src/modules/user/entities/user.entity';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 export interface ExperienceDetail {

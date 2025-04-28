@@ -13,6 +13,8 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { MajorModule } from './modules/major/major.module';
 import { LevelModule } from './modules/level/level.module';
 import { TechnologyModule } from './modules/technology/level.module';
+import { ScheduleModule } from './modules/schedule/schedule.module';
+import { InterviewSessionModule } from './modules/interview_session/interview_session.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -36,6 +38,8 @@ import { TechnologyModule } from './modules/technology/level.module';
     MailerModule,
     MajorModule,
     LevelModule,
+    ScheduleModule,
+    InterviewSessionModule,
     TechnologyModule,
     MailerModule.forRootAsync({
       imports: [ConfigModule],

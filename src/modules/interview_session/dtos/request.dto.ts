@@ -11,8 +11,8 @@ export class CreateInterviewSessionDto {
   @IsString({ each: true })
   candidate_id: string[];
 
-  @IsNumber()
-  mentorId: number;
+  @IsString()
+  mentorId: string;
 
   @IsDateString()
   scheduleDateTime: Date;
@@ -43,6 +43,9 @@ export class CreateInterviewSessionDto {
   @IsOptional()
   @IsString()
   recordingURL?: string;
+
+  @IsNumber()
+  scheduleId: number; // 🛠️ thêm scheduleId để khớp với entity
 }
 
 export class UpdateInterviewSessionDto {
