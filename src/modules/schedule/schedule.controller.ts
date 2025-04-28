@@ -24,7 +24,7 @@ export class ScheduleController {
   }
 
   @Get('user/:userId')
-  findByUser(@Param('userId') userId: number) {
+  findByUser(@Param('userId') userId: string) {
     return this.scheduleService.findByUserId(userId);
   }
 }

@@ -9,6 +9,7 @@ import { Candidate } from './entities/candidate.entity';
 import { Technology } from '../technology/technology.entity';
 import { Major } from '../major/major.entity';
 import { Level } from '../level/level.entity';
+import { ScheduleService } from '../schedule/schedule.service';
 @Injectable()
 export class UserService {
   constructor(
@@ -18,6 +19,7 @@ export class UserService {
     private dataSource: DataSource,
     @InjectRepository(Level) private levelRepo: Repository<Level>,
     @InjectRepository(Technology) private techRepo: Repository<Technology>,
+    private scheduleService: ScheduleService,
   ) {}
 
   async isEmailExist(email: string): Promise<boolean> {
@@ -26,18 +28,29 @@ export class UserService {
   }
 
   //create user
-  async create(CreateUserDto: Partial<User>): Promise<User> {
-    const isExist = await this.isEmailExist(CreateUserDto.email);
-    if (isExist)
+  async create(createUserDto: Partial<User>): Promise<User> {
+    const isExist = await this.isEmailExist(createUserDto.email);
+    if (isExist) {
       throw new BadRequestException(
-        `Email ${CreateUserDto.email} đã tồn tại. Vui lòng sử dụng email khác`,
+        `Email ${createUserDto.email} đã tồn tại. Vui lòng sử dụng email khác`,
       );
-    const hashPassword = await hashPasswordHelper(CreateUserDto.password);
+    }
+
+    const hashPassword = await hashPasswordHelper(createUserDto.password);
     const newUser = this.userRepository.create({
-      ...CreateUserDto,
+      ...createUserDto,
       password: hashPassword,
     });
-    return await this.userRepository.save(newUser);
+
+    const savedUser = await this.userRepository.save(newUser);
+
+    await this.scheduleService.create({
+      userId: savedUser.id,
+      user_role: savedUser.role,
+      note: null,
+    });
+
+    return savedUser;
   }
 
   //get all users
@@ -60,6 +73,7 @@ export class UserService {
       order: sort,
     };
     const users = await this.userRepository.find(options);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const sanitizedUsers = users.map(({ password, ...rest }) => rest);
     return {
       totalItems: totalItems,

@@ -44,6 +44,7 @@ export class CreateInterviewSessionDto {
   @IsString()
   recordingURL?: string;
 
+  @IsOptional()
   @IsNumber()
   scheduleId: number; // 🛠️ thêm scheduleId để khớp với entity
 }

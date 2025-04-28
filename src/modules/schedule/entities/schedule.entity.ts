@@ -7,7 +7,7 @@ export class Schedule {
   scheduleId: number;
 
   @Column()
-  userId: number;
+  userId: string;
 
   @Column()
   user_role: string;

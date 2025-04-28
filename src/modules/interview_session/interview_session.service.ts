@@ -3,49 +3,36 @@ import {
   CreateInterviewSessionDto,
   UpdateInterviewSessionDto,
 } from './dtos/request.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { InterviewSession } from './entities/interview_session.entity';
 
 @Injectable()
 export class InterviewSessionService {
-  private sessions = [];
+  constructor(
+    @InjectRepository(InterviewSession)
+    private sessionRepo: Repository<InterviewSession>,
+  ) {}
 
-  create(dto: CreateInterviewSessionDto) {
-    const newSession = {
-      sessionId: Date.now(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      ...dto,
-    };
-    this.sessions.push(newSession);
-    return newSession;
+  async create(dto: CreateInterviewSessionDto) {
+    const session = this.sessionRepo.create(dto);
+    return await this.sessionRepo.save(session);
   }
 
-  update(id: number, dto: UpdateInterviewSessionDto) {
-    const index = this.sessions.findIndex((s) => s.sessionId === id);
-    if (index === -1) return null;
-
-    const updatedSession = {
-      ...this.sessions[index],
-      ...dto,
-      updatedAt: new Date(), // mỗi lần update thì cập nhật updatedAt
-    };
-
-    this.sessions[index] = updatedSession;
-    return updatedSession;
+  async update(id: number, dto: UpdateInterviewSessionDto) {
+    await this.sessionRepo.update(id, dto);
+    return await this.sessionRepo.findOne({ where: { sessionId: id } });
   }
 
-  findById(id: number) {
-    return this.sessions.find((session) => session.sessionId === id) || null;
+  async findById(id: number) {
+    return await this.sessionRepo.findOne({ where: { sessionId: id } });
   }
 
-  findByScheduleId(scheduleId: number) {
-    return this.sessions.filter((session) => session.scheduleId === scheduleId);
+  async findByScheduleId(scheduleId: number) {
+    return await this.sessionRepo.find({ where: { scheduleId } });
   }
 
-  delete(id: number) {
-    const index = this.sessions.findIndex((s) => s.sessionId === id);
-    if (index === -1) return null;
-
-    const deletedSession = this.sessions.splice(index, 1);
-    return deletedSession[0];
+  async delete(id: number) {
+    return await this.sessionRepo.delete(id);
   }
 }

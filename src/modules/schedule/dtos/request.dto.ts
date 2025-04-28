@@ -2,7 +2,7 @@ import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateScheduleDto {
   @IsNumber()
-  userId: number;
+  userId: string;
 
   @IsString()
   user_role: string;

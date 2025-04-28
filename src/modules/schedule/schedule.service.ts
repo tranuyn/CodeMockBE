@@ -1,32 +1,40 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Schedule } from './entities/schedule.entity'; // import đúng path entity
 import { CreateScheduleDto, UpdateScheduleDto } from './dtos/request.dto';
 
 @Injectable()
 export class ScheduleService {
-  private schedules = [];
+  constructor(
+    @InjectRepository(Schedule)
+    private scheduleRepo: Repository<Schedule>,
+  ) {}
 
-  create(dto: CreateScheduleDto) {
-    const newSchedule = {
-      scheduleId: Date.now(), // mock
-      ...dto,
-    };
-    this.schedules.push(newSchedule);
-    return newSchedule;
+  async create(dto: CreateScheduleDto): Promise<Schedule> {
+    const schedule = this.scheduleRepo.create(dto);
+    return await this.scheduleRepo.save(schedule);
   }
 
-  update(id: number, dto: UpdateScheduleDto) {
-    const index = this.schedules.findIndex((s) => s.scheduleId === id);
-    if (index === -1) return null;
-
-    this.schedules[index] = { ...this.schedules[index], ...dto };
-    return this.schedules[index];
+  async update(id: number, dto: UpdateScheduleDto): Promise<Schedule> {
+    const schedule = await this.scheduleRepo.findOneBy({ scheduleId: id });
+    if (!schedule) {
+      throw new Error(`Schedule with ID ${id} not found`);
+    }
+    const updated = Object.assign(schedule, dto);
+    return await this.scheduleRepo.save(updated);
   }
 
-  findByUserId(userId: number) {
-    return this.schedules.find((s) => s.userId === userId);
+  async findByUserId(userId: string): Promise<Schedule | null> {
+    return await this.scheduleRepo.findOne({
+      where: { userId },
+      relations: ['interviewSessions'],
+    });
   }
 
-  findAll() {
-    return this.schedules;
+  async findAll(): Promise<Schedule[]> {
+    return await this.scheduleRepo.find({
+      relations: ['interviewSessions'],
+    });
   }
 }
