@@ -2,8 +2,8 @@ import { Public } from 'src/decorator/customize';
 import { CreateUserDto } from './dto/create-user-dto';
 import { UpdateMentorDto } from './dto/update-mentor-dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Mentor } from './entity/mentor.entity';
-import { User } from './entity/user.entity';
+import { Mentor } from './entities/mentor.entity';
+import { User } from './entities/user.entity';
 import { UserService } from './user.service';
 import {
   Body,
