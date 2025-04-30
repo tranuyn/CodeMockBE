@@ -1,7 +1,7 @@
 import { ScheduleResultDto } from 'src/modules/schedule/dtos/result.dto';
 
 export class InterviewSessionResultDto {
-  sessionId: number;
+  sessionId: string;
   candidate_id: string[];
   mentorId: string;
   scheduleDateTime: Date;

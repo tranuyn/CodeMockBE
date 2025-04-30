@@ -9,8 +9,8 @@ import { Schedule } from '../../schedule/entities/schedule.entity';
 
 @Entity()
 export class InterviewSession {
-  @PrimaryGeneratedColumn()
-  sessionId: number;
+  @PrimaryGeneratedColumn('uuid')
+  sessionId: string;
 
   @Column('simple-array')
   candidate_id: string[];
@@ -50,7 +50,7 @@ export class InterviewSession {
   schedule: Schedule;
 
   @Column()
-  scheduleId: number;
+  scheduleId: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;

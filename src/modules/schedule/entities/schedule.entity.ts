@@ -3,7 +3,7 @@ import { InterviewSession } from 'src/modules/interview_session/entities/intervi
 
 @Entity()
 export class Schedule {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   scheduleId: string;
 
   @Column()

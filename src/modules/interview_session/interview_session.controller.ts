@@ -25,23 +25,23 @@ export class InterviewSessionController {
   }
 
   @Put(':id')
-  update(@Param('id') id: number, @Body() dto: UpdateInterviewSessionDto) {
+  update(@Param('id') id: string, @Body() dto: UpdateInterviewSessionDto) {
     return this.sessionService.update(id, dto);
   }
 
   @Public()
   @Get(':id')
-  findOne(@Param('id') id: number) {
+  findOne(@Param('id') id: string) {
     return this.sessionService.findById(id);
   }
 
   @Get('schedule/:scheduleId')
-  findBySchedule(@Param('scheduleId') scheduleId: number) {
+  findBySchedule(@Param('scheduleId') scheduleId: string) {
     return this.sessionService.findByScheduleId(scheduleId);
   }
 
   @Delete(':id')
-  delete(@Param('id') id: number) {
+  delete(@Param('id') id: string) {
     return this.sessionService.delete(id);
   }
 }

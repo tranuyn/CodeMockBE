@@ -26,7 +26,7 @@ import { InterviewSessionModule } from './modules/interview_session/interview_se
         type: 'postgres',
         url: configService.get('SUPABASE_DATABASE_URL'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: false,
+        synchronize: true,
         migrationsRun: false,
         migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
         migrationsTableName: 'migrations',

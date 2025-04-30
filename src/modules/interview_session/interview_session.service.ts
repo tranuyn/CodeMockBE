@@ -19,20 +19,20 @@ export class InterviewSessionService {
     return await this.sessionRepo.save(session);
   }
 
-  async update(id: number, dto: UpdateInterviewSessionDto) {
+  async update(id: string, dto: UpdateInterviewSessionDto) {
     await this.sessionRepo.update(id, dto);
     return await this.sessionRepo.findOne({ where: { sessionId: id } });
   }
 
-  async findById(id: number) {
+  async findById(id: string) {
     return await this.sessionRepo.findOne({ where: { sessionId: id } });
   }
 
-  async findByScheduleId(scheduleId: number) {
+  async findByScheduleId(scheduleId: string) {
     return await this.sessionRepo.find({ where: { scheduleId } });
   }
 
-  async delete(id: number) {
+  async delete(id: string) {
     return await this.sessionRepo.delete(id);
   }
 }

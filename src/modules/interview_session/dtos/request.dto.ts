@@ -45,8 +45,8 @@ export class CreateInterviewSessionDto {
   recordingURL?: string;
 
   @IsOptional()
-  @IsNumber()
-  scheduleId: number; // 🛠️ thêm scheduleId để khớp với entity
+  @IsString()
+  scheduleId: string;
 }
 
 export class UpdateInterviewSessionDto {
