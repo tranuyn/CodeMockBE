@@ -1,6 +1,10 @@
+import { Feedback } from 'src/modules/feedback/entities/feedback.entity';
+
 export class InterviewSlotResultDto {
-  scheduleId: string;
-  userId: string;
-  user_role: string;
+  interviewSlotId: string;
+  candidateId: string;
+  startTime: Date;
+  endTime: Date;
+  feedback: Feedback;
   note?: string;
 }

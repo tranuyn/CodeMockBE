@@ -6,9 +6,6 @@ export class InterviewSession {
   @PrimaryGeneratedColumn('uuid')
   sessionId: string;
 
-  @Column('simple-array')
-  candidate_id: string[];
-
   @Column()
   mentorId: string;
 
@@ -16,7 +13,10 @@ export class InterviewSession {
   scheduleDateTime: Date;
 
   @Column()
-  duration: number;
+  duration: number; // tổng thời lượng toàn buổi (phút)
+
+  @Column()
+  slotDuration: number; // thời lượng mỗi slot (phút)
 
   @Column()
   status: string;
@@ -39,7 +39,9 @@ export class InterviewSession {
   @Column({ nullable: true })
   recordingURL: string;
 
-  @OneToMany(() => InterviewSlot, (slot) => slot.interviewSession)
+  @OneToMany(() => InterviewSlot, (slot) => slot.interviewSession, {
+    cascade: true,
+  })
   interviewSlots: InterviewSlot[];
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

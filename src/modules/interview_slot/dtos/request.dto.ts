@@ -1,11 +1,17 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsUUID, IsDateString } from 'class-validator';
 
 export class CreateInterviewSlotDto {
   @IsString()
-  userId: string;
+  candidateId: string;
 
-  @IsString()
-  user_role: string;
+  @IsUUID()
+  sessionId: string;
+
+  @IsDateString()
+  startTime: Date;
+
+  @IsDateString()
+  endTime: Date;
 
   @IsOptional()
   @IsString()
@@ -15,9 +21,13 @@ export class CreateInterviewSlotDto {
 export class UpdateInterviewSlotDto {
   @IsOptional()
   @IsString()
-  user_role?: string;
+  note?: string;
 
   @IsOptional()
-  @IsString()
-  note?: string;
+  @IsDateString()
+  startTime?: Date;
+
+  @IsOptional()
+  @IsDateString()
+  endTime?: Date;
 }

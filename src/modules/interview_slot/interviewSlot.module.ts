@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
-import { InterviewSlotService } from './interviewSlot.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { InterviewSlot } from './entities/interviewSlot.entity';
+import { InterviewSlotService } from './interviewSlot.service';
+import { InterviewSlotController } from './interviewSlot.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([InterviewSlot])],
-  controllers: [InterviewSlot],
+  controllers: [InterviewSlotController],
   providers: [InterviewSlotService],
-  exports: [InterviewSlot],
+  exports: [InterviewSlotService, TypeOrmModule],
 })
-export class ScheduleModule {}
+export class InterviewSlotModule {}

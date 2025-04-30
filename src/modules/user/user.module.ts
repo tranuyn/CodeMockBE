@@ -6,13 +6,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Major } from '../major/major.entity';
 import { Technology } from '../technology/technology.entity';
 import { Level } from '../level/level.entity';
-import { ScheduleModule } from '../interview_slot/interviewSlot.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([User, Major, Technology, Level]),
-    ScheduleModule,
-  ],
+  imports: [TypeOrmModule.forFeature([User, Major, Technology, Level])],
   controllers: [UserController],
   providers: [UserService],
   exports: [UserService],

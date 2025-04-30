@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import {
   CreateInterviewSessionDto,
   UpdateInterviewSessionDto,
@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { InterviewSession } from './entities/interview_session.entity';
+import { InterviewSlot } from 'src/modules/interview_slot/entities/interviewSlot.entity';
 
 @Injectable()
 export class InterviewSessionService {
@@ -14,22 +15,74 @@ export class InterviewSessionService {
     private sessionRepo: Repository<InterviewSession>,
   ) {}
 
-  async create(dto: CreateInterviewSessionDto) {
-    const session = this.sessionRepo.create(dto);
+  async create(dto: CreateInterviewSessionDto): Promise<InterviewSession> {
+    const { duration, slotDuration, scheduleDateTime, ...rest } = dto;
+
+    const totalSlots = Math.floor(duration / slotDuration);
+
+    if (totalSlots <= 0) {
+      throw new BadRequestException(
+        `Không thể tạo session vì tổng thời gian (${duration} phút) nhỏ hơn thời lượng slot (${slotDuration} phút).`,
+      );
+    }
+
+    // Tạo các slot mặc định (candidateId sẽ được thêm sau khi đăng ký)
+    const interviewSlots: InterviewSlot[] = [];
+    let currentTime = new Date(scheduleDateTime);
+
+    for (let i = 0; i < totalSlots; i++) {
+      const start = new Date(currentTime);
+      const end = new Date(start.getTime() + slotDuration * 60000); // cộng phút
+
+      const slot = new InterviewSlot();
+      slot.startTime = start;
+      slot.endTime = end;
+      slot.note = null;
+      interviewSlots.push(slot);
+
+      currentTime = end;
+    }
+
+    const session = this.sessionRepo.create({
+      duration,
+      slotDuration,
+      scheduleDateTime,
+      interviewSlots,
+      ...rest,
+    });
+
     return await this.sessionRepo.save(session);
   }
 
-  async update(id: string, dto: UpdateInterviewSessionDto) {
+  async update(
+    id: string,
+    dto: UpdateInterviewSessionDto,
+  ): Promise<InterviewSession> {
     await this.sessionRepo.update(id, dto);
-    return await this.sessionRepo.findOne({ where: { sessionId: id } });
+    return await this.sessionRepo.findOne({
+      where: { sessionId: id },
+      relations: ['interviewSlots'],
+    });
   }
 
-  async findById(id: string) {
-    return await this.sessionRepo.findOne({ where: { sessionId: id } });
+  async findById(id: string): Promise<InterviewSession> {
+    return await this.sessionRepo.findOne({
+      where: { sessionId: id },
+      relations: ['interviewSlots'],
+    });
   }
 
-  async findByScheduleId(scheduleId: string) {
-    return await this.sessionRepo.find({ where: { scheduleId } });
+  async findAll(): Promise<InterviewSession[]> {
+    return await this.sessionRepo.find({
+      relations: ['interviewSlots'],
+    });
+  }
+
+  async findByMentorId(mentorId: string): Promise<InterviewSession[]> {
+    return await this.sessionRepo.find({
+      where: { mentorId },
+      relations: ['interviewSlots'],
+    });
   }
 
   async delete(id: string) {
