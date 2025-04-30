@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entity/user.entity';
 import { FindManyOptions, DataSource, Repository } from 'typeorm';
@@ -102,26 +106,55 @@ export class UserService {
       technologyIds?: string[];
     },
   ): Promise<User> {
-    // tách các mảng ID ra
+    // Đầu tiên lấy user hiện tại để có thể cập nhật quan hệ chính xác
+    const existingUser = await this.userRepository.findOne({
+      where: { id },
+      relations: ['majors', 'levels', 'technologies'],
+    });
+
+    if (!existingUser) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    // Cập nhật thông tin cơ bản của user
     const { majorIds, levelIds, technologyIds, ...rest } = dto;
 
-    // tạo object partial để save
-    const toSave: any = { id, ...rest };
+    // Merge thuộc tính cơ bản
+    Object.assign(existingUser, rest);
 
-    if (majorIds) {
-      // mảng stub Major chỉ với id
-      toSave.majors = majorIds.map((mId) => ({ id: mId }));
-    }
-    if (levelIds) {
-      toSave.levels = levelIds.map((lId) => ({ id: lId }));
-    }
-    if (technologyIds) {
-      toSave.technologies = technologyIds.map((tId) => ({ id: tId }));
+    // Xử lý majors nếu được cung cấp
+    if (majorIds !== undefined) {
+      // Xóa tất cả các quan hệ hiện tại
+      existingUser.majors = [];
+      // Thêm các quan hệ mới
+      if (majorIds.length > 0) {
+        existingUser.majors = majorIds.map((mId) => ({ id: mId }) as any);
+      }
     }
 
-    // lưu (TypeORM sẽ tự xoá/insert vào user_majors, user_levels, user_technologies)
-    await this.userRepository.save(toSave);
+    // Xử lý levels nếu được cung cấp
+    if (levelIds !== undefined) {
+      existingUser.levels = [];
+      if (levelIds.length > 0) {
+        existingUser.levels = levelIds.map((lId) => ({ id: lId }) as any);
+      }
+    }
+
+    // Xử lý technologies nếu được cung cấp
+    if (technologyIds !== undefined) {
+      existingUser.technologies = [];
+      if (technologyIds.length > 0) {
+        existingUser.technologies = technologyIds.map(
+          (tId) => ({ id: tId }) as any,
+        );
+      }
+    }
+
+    // Lưu user với các quan hệ đã cập nhật
+    await this.userRepository.save(existingUser);
     this.updateUserCount();
+
+    // Trả về user đã cập nhật với tất cả các quan hệ
     return this.userRepository.findOneOrFail({
       where: { id },
       relations: ['majors', 'levels', 'technologies'],
