@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 import { LevelController } from './level.controller';
 import { LevelService } from './level.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '../user/entity/user.entity';
+import { User } from '../user/entities/user.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Level, User])],

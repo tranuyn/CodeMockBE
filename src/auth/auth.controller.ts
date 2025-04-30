@@ -18,7 +18,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { SignInDto } from './dto/signInDto';
 import { Response } from 'express';
 import { VerifyCodeDto } from './dto/verify-code.dto';
-import { User } from 'src/modules/user/entity/user.entity';
+import { User } from 'src/modules/user/entities/user.entity';
 
 @Controller('auth')
 export class AuthController {
