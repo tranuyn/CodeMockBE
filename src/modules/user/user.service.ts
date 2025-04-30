@@ -9,7 +9,6 @@ import { Candidate } from './entities/candidate.entity';
 import { Technology } from '../technology/technology.entity';
 import { Major } from '../major/major.entity';
 import { Level } from '../level/level.entity';
-import { ScheduleService } from '../schedule/schedule.service';
 @Injectable()
 export class UserService {
   constructor(
@@ -18,8 +17,7 @@ export class UserService {
     @InjectRepository(Major) private majorRepo: Repository<Major>,
     private dataSource: DataSource,
     @InjectRepository(Level) private levelRepo: Repository<Level>,
-    @InjectRepository(Technology) private techRepo: Repository<Technology>,
-    private scheduleService: ScheduleService,
+    @InjectRepository(Technology) private techRepo: Repository<Technology>
   ) {}
 
   async isEmailExist(email: string): Promise<boolean> {
@@ -43,13 +41,6 @@ export class UserService {
     });
 
     const savedUser = await this.userRepository.save(newUser);
-
-    await this.scheduleService.create({
-      userId: savedUser.id,
-      user_role: savedUser.role,
-      note: null,
-    });
-
     return savedUser;
   }
 

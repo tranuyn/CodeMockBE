@@ -7,10 +7,6 @@ import {
 } from 'class-validator';
 
 export class CreateInterviewSessionDto {
-  @IsArray()
-  @IsString({ each: true })
-  candidate_id: string[];
-
   @IsString()
   mentorId: string;
 
@@ -19,6 +15,9 @@ export class CreateInterviewSessionDto {
 
   @IsNumber()
   duration: number;
+
+  @IsNumber()
+  slotDuration: number;
 
   @IsString()
   status: string;
@@ -43,10 +42,6 @@ export class CreateInterviewSessionDto {
   @IsOptional()
   @IsString()
   recordingURL?: string;
-
-  @IsOptional()
-  @IsString()
-  scheduleId: string;
 }
 
 export class UpdateInterviewSessionDto {
@@ -57,6 +52,10 @@ export class UpdateInterviewSessionDto {
   @IsOptional()
   @IsNumber()
   duration?: number;
+
+  @IsOptional()
+  @IsNumber()
+  slotDuration?: number;
 
   @IsOptional()
   @IsString()

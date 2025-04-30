@@ -1,19 +1,10 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
-import { Schedule } from '../../schedule/entities/schedule.entity';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { InterviewSlot } from '../../interview_slot/entities/interviewSlot.entity';
 
 @Entity()
 export class InterviewSession {
   @PrimaryGeneratedColumn('uuid')
   sessionId: string;
-
-  @Column('simple-array')
-  candidate_id: string[];
 
   @Column()
   mentorId: string;
@@ -22,7 +13,10 @@ export class InterviewSession {
   scheduleDateTime: Date;
 
   @Column()
-  duration: number;
+  duration: number; // tổng thời lượng toàn buổi (phút)
+
+  @Column()
+  slotDuration: number; // thời lượng mỗi slot (phút)
 
   @Column()
   status: string;
@@ -45,12 +39,10 @@ export class InterviewSession {
   @Column({ nullable: true })
   recordingURL: string;
 
-  @ManyToOne(() => Schedule, (schedule) => schedule.interviewSessions)
-  @JoinColumn({ name: 'scheduleId' })
-  schedule: Schedule;
-
-  @Column()
-  scheduleId: string;
+  @OneToMany(() => InterviewSlot, (slot) => slot.interviewSession, {
+    cascade: true,
+  })
+  interviewSlots: InterviewSlot[];
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
