@@ -6,7 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Major } from '../major/major.entity';
 import { Technology } from '../technology/technology.entity';
 import { Level } from '../level/level.entity';
-import { ScheduleModule } from '../schedule/schedule.module';
+import { ScheduleModule } from '../interview_slot/interviewSlot.module';
 
 @Module({
   imports: [

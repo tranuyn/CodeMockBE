@@ -1,6 +1,6 @@
 import { IsOptional, IsString } from 'class-validator';
 
-export class CreateScheduleDto {
+export class CreateInterviewSlotDto {
   @IsString()
   userId: string;
 
@@ -12,7 +12,7 @@ export class CreateScheduleDto {
   note?: string;
 }
 
-export class UpdateScheduleDto {
+export class UpdateInterviewSlotDto {
   @IsOptional()
   @IsString()
   user_role?: string;

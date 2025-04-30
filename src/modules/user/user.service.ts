@@ -9,7 +9,7 @@ import { Candidate } from './entities/candidate.entity';
 import { Technology } from '../technology/technology.entity';
 import { Major } from '../major/major.entity';
 import { Level } from '../level/level.entity';
-import { ScheduleService } from '../schedule/schedule.service';
+import { ScheduleService } from '../interview_slot/interviewSlot.service';
 @Injectable()
 export class UserService {
   constructor(

@@ -1,4 +1,4 @@
-import { ScheduleResultDto } from 'src/modules/schedule/dtos/result.dto';
+import { ScheduleResultDto } from 'src/modules/interview_slot/dtos/result.dto';
 
 export class InterviewSessionResultDto {
   sessionId: string;

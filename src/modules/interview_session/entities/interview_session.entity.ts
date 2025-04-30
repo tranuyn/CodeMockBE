@@ -1,11 +1,5 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
-import { Schedule } from '../../schedule/entities/schedule.entity';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { InterviewSlot } from '../../interview_slot/entities/interviewSlot.entity';
 
 @Entity()
 export class InterviewSession {
@@ -45,12 +39,8 @@ export class InterviewSession {
   @Column({ nullable: true })
   recordingURL: string;
 
-  @ManyToOne(() => Schedule, (schedule) => schedule.interviewSessions)
-  @JoinColumn({ name: 'scheduleId' })
-  schedule: Schedule;
-
-  @Column()
-  scheduleId: string;
+  @OneToMany(() => InterviewSlot, (slot) => slot.interviewSession)
+  interviewSlots: InterviewSlot[];
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
