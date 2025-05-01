@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { InterviewSession } from './entities/interview_session.entity';
 import { InterviewSlot } from 'src/modules/interview_slot/entities/interviewSlot.entity';
+import { INTERVIEW_SLOT_STATUS } from 'src/libs/constant/status';
 
 @Injectable()
 export class InterviewSessionService {
@@ -26,20 +27,21 @@ export class InterviewSessionService {
       );
     }
 
-    // Tạo các slot mặc định (candidateId sẽ được thêm sau khi đăng ký)
     const interviewSlots: InterviewSlot[] = [];
     let currentTime = new Date(scheduleDateTime);
 
     for (let i = 0; i < totalSlots; i++) {
       const start = new Date(currentTime);
-      const end = new Date(start.getTime() + slotDuration * 60000); // cộng phút
+      const end = new Date(start.getTime() + slotDuration * 60000);
 
       const slot = new InterviewSlot();
       slot.startTime = start;
       slot.endTime = end;
-      slot.note = null;
-      interviewSlots.push(slot);
+      slot.status = INTERVIEW_SLOT_STATUS.AVAILABLE;
+      slot.isPaid = false;
+      slot.candidateId = null;
 
+      interviewSlots.push(slot);
       currentTime = end;
     }
 

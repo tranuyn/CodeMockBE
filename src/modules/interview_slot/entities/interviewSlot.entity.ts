@@ -8,17 +8,18 @@ import {
 } from 'typeorm';
 import { InterviewSession } from 'src/modules/interview_session/entities/interview_session.entity';
 import { Feedback } from 'src/modules/feedback/entities/feedback.entity';
+import { INTERVIEW_SLOT_STATUS } from 'src/libs/constant/status';
 
 @Entity()
 export class InterviewSlot {
   @PrimaryGeneratedColumn('uuid')
   slotId: string;
 
-  @Column()
+  @Column({ nullable: true })
   candidateId: string;
 
-  @Column({ nullable: true })
-  note: string;
+  @Column({ default: INTERVIEW_SLOT_STATUS.AVAILABLE })
+  status: INTERVIEW_SLOT_STATUS;
 
   @ManyToOne(() => InterviewSession, (session) => session.interviewSlots)
   @JoinColumn({ name: 'sessionId' })
@@ -45,4 +46,7 @@ export class InterviewSlot {
     nullable: true,
   })
   feedback: Feedback;
+
+  @Column({ default: false })
+  isPaid: boolean;
 }

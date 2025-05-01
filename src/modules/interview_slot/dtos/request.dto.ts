@@ -1,9 +1,14 @@
-import { IsOptional, IsString, IsUUID, IsDateString } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsUUID,
+  IsDateString,
+  IsEnum,
+  IsBoolean,
+} from 'class-validator';
+import { INTERVIEW_SLOT_STATUS } from 'src/libs/constant/status';
 
 export class CreateInterviewSlotDto {
-  @IsString()
-  candidateId: string;
-
   @IsUUID()
   sessionId: string;
 
@@ -15,14 +20,18 @@ export class CreateInterviewSlotDto {
 
   @IsOptional()
   @IsString()
-  note?: string;
+  candidateId?: string;
+
+  @IsOptional()
+  @IsEnum(INTERVIEW_SLOT_STATUS)
+  status?: INTERVIEW_SLOT_STATUS;
+
+  @IsOptional()
+  @IsBoolean()
+  isPaid?: boolean;
 }
 
 export class UpdateInterviewSlotDto {
-  @IsOptional()
-  @IsString()
-  note?: string;
-
   @IsOptional()
   @IsDateString()
   startTime?: Date;
@@ -30,4 +39,25 @@ export class UpdateInterviewSlotDto {
   @IsOptional()
   @IsDateString()
   endTime?: Date;
+
+  @IsOptional()
+  @IsEnum(INTERVIEW_SLOT_STATUS)
+  status?: INTERVIEW_SLOT_STATUS;
+
+  @IsOptional()
+  @IsString()
+  candidateId?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isPaid?: boolean;
+}
+
+export class RegisterInterviewSlotDto {
+  @IsString()
+  candidateId: string;
+}
+export class CancelInterviewSlotDto {
+  @IsString()
+  candidateId: string;
 }

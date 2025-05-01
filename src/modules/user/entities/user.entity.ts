@@ -2,10 +2,8 @@ import { Technology } from './../../technology/technology.entity';
 import {
   Column,
   Entity,
-  ManyToOne,
   PrimaryGeneratedColumn,
   TableInheritance,
-  JoinColumn,
   JoinTable,
   ManyToMany,
   CreateDateColumn,
@@ -48,7 +46,6 @@ export class User {
   @Column({ nullable: true })
   phone: string;
 
-  // Sửa relation Major thành ManyToOne với JoinColumn
   @ManyToMany(() => Major, (major) => major.users, { cascade: ['insert'] })
   @JoinTable({ name: 'user_majors' })
   majors: Major[];
@@ -56,8 +53,6 @@ export class User {
   // Lưu mảng JSON mà không dùng array: true
   @Column('json', { nullable: true })
   experiences: ExperienceDetail[];
-
-  // Dùng enum rõ ràng cho LEVEL
 
   @ManyToMany(() => Level, (level) => level.users, { cascade: ['insert'] })
   @JoinTable({ name: 'user_levels' })

@@ -17,7 +17,7 @@ export class UserService {
     @InjectRepository(Major) private majorRepo: Repository<Major>,
     private dataSource: DataSource,
     @InjectRepository(Level) private levelRepo: Repository<Level>,
-    @InjectRepository(Technology) private techRepo: Repository<Technology>
+    @InjectRepository(Technology) private techRepo: Repository<Technology>,
   ) {}
 
   async isEmailExist(email: string): Promise<boolean> {
@@ -181,5 +181,25 @@ export class UserService {
     `,
       })
       .execute();
+  }
+
+  async incrementWarningCount(userId: string): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new BadRequestException(`Không tìm thấy user với ID ${userId}`);
+    }
+
+    user.warning_count = (user.warning_count || 0) + 1;
+
+    const MAX_WARNING = 3;
+
+    if (user.warning_count >= MAX_WARNING) {
+      const now = new Date();
+      const threeMonthsLater = new Date(now.setMonth(now.getMonth() + 3));
+      user.warning_until = threeMonthsLater;
+    }
+
+    return await this.userRepository.save(user);
   }
 }
