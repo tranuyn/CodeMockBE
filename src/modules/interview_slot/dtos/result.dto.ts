@@ -1,10 +1,21 @@
-import { Feedback } from 'src/modules/feedback/entities/feedback.entity';
+import { INTERVIEW_SLOT_STATUS } from 'src/libs/constant/status';
+import { FeedbackResultDto } from 'src/modules/feedback/dtos/feedback_result.dto';
 
 export class InterviewSlotResultDto {
-  interviewSlotId: string;
-  candidateId: string;
+  slotId: string;
+
+  candidateId?: string;
+
+  sessionId: string;
+
   startTime: Date;
   endTime: Date;
-  feedback: Feedback;
+
+  status: INTERVIEW_SLOT_STATUS;
+
+  isPaid: boolean;
+
   note?: string;
+
+  feedback?: FeedbackResultDto;
 }

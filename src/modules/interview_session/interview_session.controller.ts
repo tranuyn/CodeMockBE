@@ -35,6 +35,7 @@ export class InterviewSessionController {
     return this.sessionService.findById(id);
   }
 
+  @Public()
   @Get('mentor/:mentorId')
   findByMentor(@Param('mentorId') mentorId: string) {
     return this.sessionService.findByMentorId(mentorId);
