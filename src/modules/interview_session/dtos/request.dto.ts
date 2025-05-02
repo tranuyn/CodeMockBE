@@ -22,8 +22,9 @@ export class CreateInterviewSessionDto {
   @IsString()
   status: string;
 
-  @IsString()
-  major_id: string;
+  @IsArray()
+  @IsString({ each: true })
+  major_id: string[];
 
   @IsString()
   level_id: string;

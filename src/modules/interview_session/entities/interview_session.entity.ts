@@ -21,8 +21,8 @@ export class InterviewSession {
   @Column()
   status: string;
 
-  @Column()
-  major_id: string;
+  @Column('simple-array')
+  major_id: string[];
 
   @Column()
   level_id: string;
