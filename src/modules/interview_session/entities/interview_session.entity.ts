@@ -1,10 +1,25 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
+  JoinTable,
+  ManyToMany,
+} from 'typeorm';
 import { InterviewSlot } from '../../interview_slot/entities/interviewSlot.entity';
+import { User } from 'src/modules/user/entities/user.entity';
+import { Technology } from 'src/modules/technology/technology.entity';
 
 @Entity()
 export class InterviewSession {
   @PrimaryGeneratedColumn('uuid')
   sessionId: string;
+
+  @ManyToOne(() => User, (user) => user.sessionsAsMentor)
+  @JoinColumn({ name: 'mentorId' })
+  mentor: User;
 
   @Column()
   mentorId: string;
@@ -27,8 +42,19 @@ export class InterviewSession {
   @Column()
   level_id: string;
 
-  @Column('simple-array')
-  requiredTechnology: string[];
+  @ManyToMany(() => Technology)
+  @JoinTable({
+    name: 'interviewSession_technologies',
+    joinColumn: {
+      name: 'sessionId',
+      referencedColumnName: 'sessionId',
+    },
+    inverseJoinColumn: {
+      name: 'technologyId',
+      referencedColumnName: 'id',
+    },
+  })
+  requiredTechnologies: Technology[];
 
   @Column()
   sessionPrice: number;

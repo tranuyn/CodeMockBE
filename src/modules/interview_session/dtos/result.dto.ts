@@ -1,4 +1,5 @@
 import { InterviewSlotResultDto } from 'src/modules/interview_slot/dtos/result.dto';
+import { TechnologyResultDto } from 'src/modules/technology/dtos/result.dto';
 
 export class InterviewSessionResultDto {
   sessionId: string;
@@ -9,7 +10,7 @@ export class InterviewSessionResultDto {
   status: string;
   major_id: string[];
   level_id: string;
-  requiredTechnology: string[];
+  requiredTechnology: TechnologyResultDto[];
   sessionPrice: number;
   meetingLink?: string;
   recordingURL?: string;

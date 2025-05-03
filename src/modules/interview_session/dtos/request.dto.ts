@@ -31,7 +31,7 @@ export class CreateInterviewSessionDto {
 
   @IsArray()
   @IsString({ each: true })
-  requiredTechnology: string[];
+  requiredTechnologyIds: string[];
 
   @IsNumber()
   sessionPrice: number;
