@@ -32,6 +32,7 @@ export class InterviewSlotController {
     return this.InterviewSlotService.findAll();
   }
 
+  @Public()
   @Get('user/:userId')
   findByUser(@Param('userId') userId: string) {
     return this.InterviewSlotService.findByUserId(userId);

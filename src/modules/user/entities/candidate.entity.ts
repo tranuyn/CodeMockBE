@@ -1,5 +1,5 @@
 import { User } from 'src/modules/user/entities/user.entity';
-import { Column, Entity, ChildEntity, OneToMany } from 'typeorm';
+import { Column, ChildEntity, OneToMany } from 'typeorm';
 import { ExperienceDetail } from 'src/modules/common_entity/experience_detail.entity';
 import { InterviewSlot } from 'src/modules/interview_slot/entities/interviewSlot.entity';
 
@@ -12,7 +12,7 @@ export class Candidate extends User {
   educationBackground: ExperienceDetail[];
 
   @Column('text', { array: true, nullable: true })
-  biography: String[];
+  biography: string[];
 
   @Column({ nullable: true })
   average_point: number;

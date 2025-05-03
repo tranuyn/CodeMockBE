@@ -1,5 +1,5 @@
 import { User } from 'src/modules/user/entities/user.entity';
-import { Column, Entity, ChildEntity } from 'typeorm';
+import { Column, ChildEntity } from 'typeorm';
 import { ExperienceDetail } from 'src/modules/common_entity/experience_detail.entity';
 
 @ChildEntity('MENTOR') // overide role in user
