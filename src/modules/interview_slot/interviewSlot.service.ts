@@ -67,7 +67,7 @@ export class InterviewSlotService {
   async findOne(id: string): Promise<InterviewSlot> {
     const slot = await this.interviewSlotRepo.findOne({
       where: { slotId: id },
-      relations: ['interviewSession', 'feedback'],
+      relations: ['interviewSession', 'candidate', 'feedback'],
     });
 
     if (!slot) {
@@ -91,6 +91,7 @@ export class InterviewSlotService {
   ): Promise<InterviewSlot> {
     const slot = await this.interviewSlotRepo.findOne({
       where: { slotId },
+      relations: ['interviewSession'],
     });
 
     if (!slot) {
@@ -98,7 +99,21 @@ export class InterviewSlotService {
     }
 
     if (slot.status !== INTERVIEW_SLOT_STATUS.AVAILABLE) {
-      throw new BadRequestException(`Slot đã được đăng ký hoặc không khả dụng`);
+      throw new BadRequestException(`Slot không khả dụng`);
+    }
+
+    const sessionId = slot.interviewSession.sessionId;
+    const existingSlot = await this.interviewSlotRepo.findOne({
+      where: {
+        candidate: { id: candidateId },
+        interviewSession: { sessionId },
+      },
+    });
+
+    if (existingSlot) {
+      throw new BadRequestException(
+        `Bạn đã đăng ký một slot trong session này rồi`,
+      );
     }
 
     slot.candidate = { id: candidateId } as Candidate;
@@ -112,6 +127,7 @@ export class InterviewSlotService {
   ): Promise<InterviewSlot> {
     const slot = await this.interviewSlotRepo.findOne({
       where: { slotId },
+      relations: ['candidate'],
     });
 
     if (!slot) {

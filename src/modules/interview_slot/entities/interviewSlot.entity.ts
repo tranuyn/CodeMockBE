@@ -16,9 +16,9 @@ export class InterviewSlot {
   @PrimaryGeneratedColumn('uuid')
   slotId: string;
 
-  @OneToOne(() => Candidate, (candidate) => candidate.interviewSlots)
+  @ManyToOne(() => Candidate, (candidate) => candidate.interviewSlots)
   @JoinColumn({ name: 'candidateId' })
-  candidate?: Candidate;
+  candidate: Candidate;
 
   @Column({ default: INTERVIEW_SLOT_STATUS.AVAILABLE })
   status: INTERVIEW_SLOT_STATUS;

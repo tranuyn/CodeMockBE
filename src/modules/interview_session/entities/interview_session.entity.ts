@@ -5,9 +5,15 @@ import {
   OneToMany,
   ManyToOne,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
+  OneToOne,
 } from 'typeorm';
 import { InterviewSlot } from '../../interview_slot/entities/interviewSlot.entity';
 import { Mentor } from 'src/modules/user/entities/mentor.entity';
+import { Technology } from 'src/modules/technology/technology.entity';
+import { Major } from 'src/modules/major/major.entity';
+import { Level } from 'src/modules/level/level.entity';
 
 @Entity()
 export class InterviewSession {
@@ -30,14 +36,37 @@ export class InterviewSession {
   @Column()
   status: string;
 
-  @Column('simple-array')
-  major_id: string[];
+  @ManyToMany(() => Major)
+  @JoinTable({
+    name: 'interviewSession_majors',
+    joinColumn: {
+      name: 'sessionId',
+      referencedColumnName: 'sessionId',
+    },
+    inverseJoinColumn: {
+      name: 'majorId',
+      referencedColumnName: 'id',
+    },
+  })
+  majors: Major[];
 
-  @Column()
-  level_id: string;
+  @OneToOne(() => Level)
+  @JoinColumn({ name: 'level_id' })
+  level: Level;
 
-  @Column({ type: 'simple-array', nullable: true })
-  requiredTechnology: string[];
+  @ManyToMany(() => Technology)
+  @JoinTable({
+    name: 'interviewSession_technologies',
+    joinColumn: {
+      name: 'sessionId',
+      referencedColumnName: 'sessionId',
+    },
+    inverseJoinColumn: {
+      name: 'technologyId',
+      referencedColumnName: 'id',
+    },
+  })
+  requiredTechnologies: Technology[];
 
   @Column()
   sessionPrice: number;

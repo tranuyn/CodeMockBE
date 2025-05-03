@@ -8,8 +8,8 @@ export class InterviewSessionResultDto {
   duration: number;
   slotDuration: number;
   status: string;
-  major_id: string[];
-  level_id: string;
+  majors: string[];
+  level: string;
   requiredTechnology: TechnologyResultDto[];
   sessionPrice: number;
   meetingLink?: string;

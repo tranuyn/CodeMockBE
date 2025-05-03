@@ -14,6 +14,8 @@ import { InterviewSlot } from 'src/modules/interview_slot/entities/interviewSlot
 import { INTERVIEW_SLOT_STATUS } from 'src/libs/constant/status';
 import { User } from '../user/entities/user.entity';
 import { Technology } from '../technology/technology.entity';
+import { Major } from '../major/major.entity';
+import { Level } from '../level/level.entity';
 
 @Injectable()
 export class InterviewSessionService {
@@ -26,6 +28,12 @@ export class InterviewSessionService {
 
     @InjectRepository(Technology)
     private technologyRepo: Repository<Technology>,
+
+    @InjectRepository(Major)
+    private majorRepo: Repository<Major>,
+
+    @InjectRepository(Level)
+    private levelRepo: Repository<Level>,
   ) {}
 
   async create(dto: CreateInterviewSessionDto): Promise<InterviewSession> {
@@ -35,9 +43,15 @@ export class InterviewSessionService {
       scheduleDateTime,
       mentorId,
       requiredTechnologyIds,
+      majorIds,
+      levelId,
       ...rest
     } = dto;
-    const mentor = await this.userRepo.findOne({ where: { id: mentorId } });
+
+    // Tìm Mentor từ ID
+    const mentor = await this.userRepo.findOne({
+      where: { id: mentorId },
+    });
 
     if (!mentor) {
       throw new NotFoundException(
@@ -45,24 +59,23 @@ export class InterviewSessionService {
       );
     }
 
+    // Kiểm tra tổng thời gian hợp lệ
     const totalSlots = Math.floor(duration / slotDuration);
-
     if (totalSlots <= 0) {
       throw new BadRequestException(
         `Không thể tạo session vì tổng thời gian (${duration} phút) nhỏ hơn thời lượng slot (${slotDuration} phút).`,
       );
     }
+    const majors = await this.majorRepo.findBy({ id: In(majorIds) });
+    const level = await this.levelRepo.findOne({ where: { id: levelId } });
 
+    if (!level) {
+      throw new NotFoundException(`Level không tồn tại với ID: ${levelId}`);
+    }
+
+    // Tạo các slot từ thời gian bắt đầu
     const interviewSlots: InterviewSlot[] = [];
     let currentTime = new Date(scheduleDateTime);
-
-    // Get technologies
-    const technologies = await this.technologyRepo.findBy({
-      id: In(requiredTechnologyIds),
-    });
-
-    // Extract just the IDs for the simple-array field
-    const technologyIds = technologies.map((tech) => tech.id);
 
     for (let i = 0; i < totalSlots; i++) {
       const start = new Date(currentTime);
@@ -79,13 +92,19 @@ export class InterviewSessionService {
       currentTime = end;
     }
 
+    const technologies = await this.technologyRepo.findBy({
+      id: In(requiredTechnologyIds),
+    });
+
     const session = this.sessionRepo.create({
       duration,
       slotDuration,
       scheduleDateTime,
       mentor,
       interviewSlots,
-      requiredTechnology: technologyIds, // Note the singular name matching the entity
+      level,
+      majors,
+      requiredTechnologies: technologies,
       ...rest,
     });
 

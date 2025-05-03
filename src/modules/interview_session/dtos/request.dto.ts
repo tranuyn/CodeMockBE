@@ -24,10 +24,10 @@ export class CreateInterviewSessionDto {
 
   @IsArray()
   @IsString({ each: true })
-  major_id: string[];
+  majorIds: string[];
 
   @IsString()
-  level_id: string;
+  levelId: string;
 
   @IsArray()
   @IsString({ each: true })
@@ -69,4 +69,9 @@ export class UpdateInterviewSessionDto {
   @IsOptional()
   @IsString()
   recordingURL?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  requiredTechnologyIds: string[];
 }

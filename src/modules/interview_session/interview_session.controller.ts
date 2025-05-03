@@ -23,14 +23,14 @@ export class InterviewSessionController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RoleGuard)
-  @Roles(Role.CANDIDATE, Role.ADMIN)
+  @Roles(Role.MENTOR, Role.ADMIN)
   create(@Body() dto: CreateInterviewSessionDto) {
     return this.sessionService.create(dto);
   }
 
   @Put(':id')
   @UseGuards(JwtAuthGuard, RoleGuard)
-  @Roles(Role.CANDIDATE, Role.ADMIN)
+  @Roles(Role.MENTOR, Role.ADMIN)
   update(@Param('id') id: string, @Body() dto: UpdateInterviewSessionDto) {
     return this.sessionService.update(id, dto);
   }
