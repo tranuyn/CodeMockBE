@@ -41,9 +41,10 @@ export class InterviewSessionController {
     return this.sessionService.findById(id);
   }
 
-  @Get('schedule/:scheduleId')
-  findBySchedule(@Param('scheduleId') scheduleId: string) {
-    return this.sessionService.findByScheduleId(scheduleId);
+  @Public()
+  @Get('mentor/:mentorId')
+  findByMentor(@Param('mentorId') mentorId: string) {
+    return this.sessionService.findByMentorId(mentorId);
   }
 
   @Delete(':id')

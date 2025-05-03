@@ -1,18 +1,19 @@
-import { ScheduleResultDto } from 'src/modules/schedule/dtos/result.dto';
+import { InterviewSlotResultDto } from 'src/modules/interview_slot/dtos/result.dto';
 
 export class InterviewSessionResultDto {
   sessionId: string;
-  candidate_id: string[];
   mentorId: string;
   scheduleDateTime: Date;
   duration: number;
+  slotDuration: number;
   status: string;
-  major_id: string;
+  major_id: string[];
   level_id: string;
   requiredTechnology: string[];
   sessionPrice: number;
   meetingLink?: string;
   recordingURL?: string;
-  createAt: Date;
-  schedule: ScheduleResultDto;
+  createdAt: Date;
+  updatedAt: Date;
+  interviewSlots: InterviewSlotResultDto[];
 }
