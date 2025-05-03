@@ -1,4 +1,4 @@
-import { Public } from 'src/decorator/customize';
+import { GetUser, Public } from 'src/decorator/customize';
 import { CreateUserDto } from './dto/create-user-dto';
 import { UpdateMentorDto } from './dto/update-mentor-dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -48,10 +48,9 @@ export class UserController {
     return this.userService.findOne(id);
   }
 
-  @Public()
-  @Patch('/:id')
-  update(@Param('id') id: string, @Body() updateUserDto: Partial<User>) {
-    return this.userService.update(id, updateUserDto);
+  @Patch('/profile')
+  update(@GetUser('id') userId: string, @Body() updateUserDto: Partial<User>) {
+    return this.userService.update(userId, updateUserDto);
   }
 
   @Delete(':id')

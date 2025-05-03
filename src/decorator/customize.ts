@@ -15,3 +15,12 @@ export const GetUser = createParamDecorator(
     return data ? user?.[data] : user;
   },
 );
+
+export enum Role {
+  CANDIDATE = 'CANDIDATE',
+  MENTOR = 'MENTOR',
+  ADMIN = 'ADMIN',
+}
+
+export const ROLES_KEY = 'roles';
+export const Roles = (...roles: Role[]) => SetMetadata(ROLES_KEY, roles);
