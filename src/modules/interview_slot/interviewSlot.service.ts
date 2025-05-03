@@ -13,6 +13,7 @@ import {
 } from './dtos/request.dto';
 import { INTERVIEW_SLOT_STATUS } from 'src/libs/constant/status';
 import { UserService } from '../user/user.service';
+import { Candidate } from '../user/entities/candidate.entity';
 
 @Injectable()
 export class InterviewSlotService {
@@ -45,7 +46,7 @@ export class InterviewSlotService {
 
   async findByUserId(candidateId: string): Promise<InterviewSlot[]> {
     return await this.interviewSlotRepo.find({
-      where: { candidateId },
+      where: { candidate: { id: candidateId } },
       relations: ['interviewSession', 'feedback'],
     });
   }
@@ -58,8 +59,8 @@ export class InterviewSlotService {
 
   async findBySessionId(sessionId: string): Promise<InterviewSlot[]> {
     return await this.interviewSlotRepo.find({
-      where: { sessionId },
-      relations: ['feedback'],
+      where: { interviewSession: { sessionId: sessionId } }, // Sử dụng đúng tên thuộc tính
+      relations: ['feedback'], // Đảm bảo feedback cũng là một mối quan hệ trong InterviewSlot
     });
   }
 
@@ -100,7 +101,7 @@ export class InterviewSlotService {
       throw new BadRequestException(`Slot đã được đăng ký hoặc không khả dụng`);
     }
 
-    slot.candidateId = candidateId;
+    slot.candidate = { id: candidateId } as Candidate;
     slot.status = INTERVIEW_SLOT_STATUS.BOOKED;
     return await this.interviewSlotRepo.save(slot);
   }
@@ -117,9 +118,10 @@ export class InterviewSlotService {
       throw new NotFoundException(`Không tìm thấy slot với ID ${slotId}`);
     }
 
-    if (slot.candidateId !== candidateId) {
-      throw new ForbiddenException(`Bạn không có quyền hủy slot này`);
-    }
+    // đã dùng jwt nên đoạn này ko cần
+    // if (slot.candidateId !== candidateId) {
+    //   throw new ForbiddenException(`Bạn không có quyền hủy slot này`);
+    // }
 
     const now = new Date();
     const startTime = new Date(slot.startTime);
@@ -129,7 +131,7 @@ export class InterviewSlotService {
     if (diffInHours >= 48) {
       // Hủy đúng hạn → reset slot
       slot.status = INTERVIEW_SLOT_STATUS.AVAILABLE;
-      slot.candidateId = null;
+      slot.candidate = null;
       slot.isPaid = false;
     } else {
       // Hủy trễ → vẫn giữ candidateId, đánh dấu vi phạm

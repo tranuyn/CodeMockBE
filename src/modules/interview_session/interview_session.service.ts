@@ -39,7 +39,7 @@ export class InterviewSessionService {
       slot.endTime = end;
       slot.status = INTERVIEW_SLOT_STATUS.AVAILABLE;
       slot.isPaid = false;
-      slot.candidateId = null;
+      slot.candidate = null;
 
       interviewSlots.push(slot);
       currentTime = end;
@@ -82,7 +82,7 @@ export class InterviewSessionService {
 
   async findByMentorId(mentorId: string): Promise<InterviewSession[]> {
     return await this.sessionRepo.find({
-      where: { mentorId },
+      where: { mentor: { id: mentorId } },
       relations: ['interviewSlots'],
     });
   }

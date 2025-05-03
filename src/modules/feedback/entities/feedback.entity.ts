@@ -42,7 +42,4 @@ export class Feedback {
   })
   @JoinColumn({ name: 'slotId' })
   slot: InterviewSlot;
-
-  @Column()
-  slotId: string;
 }

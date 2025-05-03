@@ -9,14 +9,16 @@ import {
 import { InterviewSession } from 'src/modules/interview_session/entities/interview_session.entity';
 import { Feedback } from 'src/modules/feedback/entities/feedback.entity';
 import { INTERVIEW_SLOT_STATUS } from 'src/libs/constant/status';
+import { Candidate } from 'src/modules/user/entities/candidate.entity';
 
 @Entity()
 export class InterviewSlot {
   @PrimaryGeneratedColumn('uuid')
   slotId: string;
 
-  @Column({ nullable: true })
-  candidateId: string;
+  @OneToOne(() => Candidate, (candidate) => candidate.interviewSlots)
+  @JoinColumn({ name: 'candidateId' })
+  candidate?: Candidate;
 
   @Column({ default: INTERVIEW_SLOT_STATUS.AVAILABLE })
   status: INTERVIEW_SLOT_STATUS;
@@ -24,9 +26,6 @@ export class InterviewSlot {
   @ManyToOne(() => InterviewSession, (session) => session.interviewSlots)
   @JoinColumn({ name: 'sessionId' })
   interviewSession: InterviewSession;
-
-  @Column()
-  sessionId: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   startTime: Date;

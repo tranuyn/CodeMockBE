@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { InterviewSlotService } from './interviewSlot.service';
-import { Public } from 'src/decorator/customize';
+import { GetUser, Public } from 'src/decorator/customize';
 import {
   CancelInterviewSlotDto,
   CreateInterviewSlotDto,
@@ -41,11 +41,11 @@ export class InterviewSlotController {
   @Put(':id/register')
   async registerCandidate(
     @Param('id') slotId: string,
-    @Body() dto: RegisterInterviewSlotDto,
+    @GetUser('id') candidateId: string,
   ) {
     return this.InterviewSlotService.registerCandidateToSlot(
       slotId,
-      dto.candidateId,
+      candidateId,
     );
   }
 
@@ -53,8 +53,8 @@ export class InterviewSlotController {
   @Put(':id/cancel')
   async cancelSlot(
     @Param('id') slotId: string,
-    @Body() dto: CancelInterviewSlotDto,
+    @GetUser('id') candidateId: string,
   ) {
-    return this.slotService.cancelSlotByCandidate(slotId, dto.candidateId);
+    return this.slotService.cancelSlotByCandidate(slotId, candidateId);
   }
 }

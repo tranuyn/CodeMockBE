@@ -1,13 +1,22 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { InterviewSlot } from '../../interview_slot/entities/interviewSlot.entity';
+import { Mentor } from 'src/modules/user/entities/mentor.entity';
 
 @Entity()
 export class InterviewSession {
   @PrimaryGeneratedColumn('uuid')
   sessionId: string;
 
-  @Column()
-  mentorId: string;
+  @ManyToOne(() => Mentor)
+  @JoinColumn({ name: 'mentorId' })
+  mentor: Mentor;
 
   @Column({ type: 'timestamp' })
   scheduleDateTime: Date;
@@ -27,7 +36,7 @@ export class InterviewSession {
   @Column()
   level_id: string;
 
-  @Column('simple-array')
+  @Column({ type: 'simple-array', nullable: true })
   requiredTechnology: string[];
 
   @Column()

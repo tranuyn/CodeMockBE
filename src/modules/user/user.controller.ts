@@ -14,7 +14,10 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/passport/jwt-auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -48,8 +51,12 @@ export class UserController {
     return this.userService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch('/profile')
-  update(@GetUser('id') userId: string, @Body() updateUserDto: Partial<User>) {
+  async update(
+    @GetUser('id') userId: string,
+    @Body() updateUserDto: Partial<User>,
+  ) {
     return this.userService.update(userId, updateUserDto);
   }
 
