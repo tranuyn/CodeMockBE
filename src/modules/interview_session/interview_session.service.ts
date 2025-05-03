@@ -29,7 +29,14 @@ export class InterviewSessionService {
   ) {}
 
   async create(dto: CreateInterviewSessionDto): Promise<InterviewSession> {
-    const { duration, slotDuration, scheduleDateTime, mentorId, ...rest } = dto;
+    const {
+      duration,
+      slotDuration,
+      scheduleDateTime,
+      mentorId,
+      requiredTechnologyIds,
+      ...rest
+    } = dto;
     const mentor = await this.userRepo.findOne({ where: { id: mentorId } });
 
     if (!mentor) {
@@ -38,11 +45,6 @@ export class InterviewSessionService {
       );
     }
 
-    if (mentor.role !== 'MENTOR') {
-      throw new BadRequestException(
-        'Chỉ người dùng có vai trò MENTOR mới được tạo session',
-      );
-    }
     const totalSlots = Math.floor(duration / slotDuration);
 
     if (totalSlots <= 0) {
@@ -53,9 +55,15 @@ export class InterviewSessionService {
 
     const interviewSlots: InterviewSlot[] = [];
     let currentTime = new Date(scheduleDateTime);
+
+    // Get technologies
     const technologies = await this.technologyRepo.findBy({
-      id: In(dto.requiredTechnologyIds),
+      id: In(requiredTechnologyIds),
     });
+
+    // Extract just the IDs for the simple-array field
+    const technologyIds = technologies.map((tech) => tech.id);
+
     for (let i = 0; i < totalSlots; i++) {
       const start = new Date(currentTime);
       const end = new Date(start.getTime() + slotDuration * 60000);
@@ -75,10 +83,9 @@ export class InterviewSessionService {
       duration,
       slotDuration,
       scheduleDateTime,
-      mentorId: mentor.id,
       mentor,
       interviewSlots,
-      requiredTechnologies: technologies,
+      requiredTechnology: technologyIds, // Note the singular name matching the entity
       ...rest,
     });
 

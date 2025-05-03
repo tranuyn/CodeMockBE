@@ -9,6 +9,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  BaseEntity,
 } from 'typeorm';
 import { ExperienceDetail } from 'src/modules/common_entity/experience_detail.entity';
 import { Major } from 'src/modules/major/major.entity';
@@ -17,7 +18,7 @@ import { InterviewSession } from 'src/modules/interview_session/entities/intervi
 
 @Entity({ name: 'user' })
 @TableInheritance({ column: { type: 'varchar', name: 'role' } })
-export class User {
+export class User extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -74,9 +75,6 @@ export class User {
 
   @Column({ nullable: true, type: 'timestamp' })
   dateCreated: Date;
-
-  @OneToMany(() => InterviewSession, (session) => session.mentor)
-  sessionsAsMentor: InterviewSession[];
 
   @Column({ nullable: true })
   warning_count: number;

@@ -36,7 +36,7 @@ export class InterviewSession {
   @Column()
   level_id: string;
 
-  @Column('simple-array')
+  @Column({ type: 'simple-array', nullable: true })
   requiredTechnology: string[];
 
   @Column()
