@@ -5,7 +5,12 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { FindManyOptions, DataSource, Repository } from 'typeorm';
+import {
+  FindManyOptions,
+  DataSource,
+  Repository,
+  EntityManager,
+} from 'typeorm';
 import { hashPasswordHelper } from 'src/helpers/util';
 import aqp from 'api-query-params';
 import { Mentor } from './entities/mentor.entity';
@@ -61,7 +66,7 @@ export class UserService {
     const totalItems = await this.userRepository.count(filter);
     const totalPages = Math.ceil(totalItems / limit);
     const pageNumber = Math.min(totalPages, Math.ceil(skip / limit));
-    const options: FindManyOptions<User | Mentor | Candidate> = {
+    const options: FindManyOptions<User> = {
       where: filter,
       take: limit,
       skip: skip,
@@ -111,59 +116,116 @@ export class UserService {
       technologyIds?: string[];
     },
   ): Promise<User> {
-    // Đầu tiên lấy user hiện tại để có thể cập nhật quan hệ chính xác
-    const existingUser = await this.userRepository.findOne({
-      where: { id },
-      relations: ['majors', 'levels', 'technologies'],
-    });
+    return this.dataSource.transaction(async (manager) => {
+      // Đầu tiên lấy user hiện tại
+      const existingUser = await manager.findOne(User, {
+        where: { id },
+        relations: ['majors', 'levels', 'technologies'],
+      });
 
-    if (!existingUser) {
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
-
-    // Cập nhật thông tin cơ bản của user
-    const { majorIds, levelIds, technologyIds, ...rest } = dto;
-
-    // Merge thuộc tính cơ bản
-    Object.assign(existingUser, rest);
-
-    // Xử lý majors nếu được cung cấp
-    if (majorIds !== undefined) {
-      // Xóa tất cả các quan hệ hiện tại
-      existingUser.majors = [];
-      // Thêm các quan hệ mới
-      if (majorIds.length > 0) {
-        existingUser.majors = majorIds.map((mId) => ({ id: mId }) as any);
+      if (!existingUser) {
+        throw new NotFoundException(`User with ID ${id} not found`);
       }
-    }
 
-    // Xử lý levels nếu được cung cấp
-    if (levelIds !== undefined) {
-      existingUser.levels = [];
-      if (levelIds.length > 0) {
-        existingUser.levels = levelIds.map((lId) => ({ id: lId }) as any);
-      }
-    }
+      // Cập nhật thông tin cơ bản của user
+      const { majorIds, levelIds, technologyIds, ...rest } = dto;
 
-    // Xử lý technologies nếu được cung cấp
-    if (technologyIds !== undefined) {
-      existingUser.technologies = [];
-      if (technologyIds.length > 0) {
-        existingUser.technologies = technologyIds.map(
-          (tId) => ({ id: tId }) as any,
+      // Merge thuộc tính cơ bản
+      Object.assign(existingUser, rest);
+
+      // Lưu thông tin cơ bản của user trước
+      await manager.save(existingUser);
+
+      // Xử lý majors nếu được cung cấp
+      if (majorIds !== undefined) {
+        await this.updateRelationships(
+          manager,
+          'user_major',
+          'major_id',
+          id,
+          majorIds,
         );
       }
+
+      // Xử lý levels nếu được cung cấp
+      if (levelIds !== undefined) {
+        await this.updateRelationships(
+          manager,
+          'user_level',
+          'level_id',
+          id,
+          levelIds,
+        );
+      }
+
+      // Xử lý technologies nếu được cung cấp
+      if (technologyIds !== undefined) {
+        await this.updateRelationships(
+          manager,
+          'user_technology',
+          'technology_id',
+          id,
+          technologyIds,
+        );
+      }
+
+      this.updateUserCount();
+
+      // Trả về user đã cập nhật với tất cả các quan hệ
+      return manager.findOneOrFail(User, {
+        where: { id },
+        relations: ['majors', 'levels', 'technologies'],
+      });
+    });
+  }
+
+  // Hàm helper để cập nhật các mối quan hệ
+  private async updateRelationships(
+    manager: EntityManager,
+    tableName: string,
+    foreignKeyColumn: string,
+    userId: string,
+    newIds: string[],
+  ): Promise<void> {
+    // 1. Lấy danh sách các ID hiện có
+    const existingRelations = await manager
+      .createQueryBuilder()
+      .select(foreignKeyColumn)
+      .from(tableName, 'rel')
+      .where('user_id = :userId', { userId })
+      .getRawMany();
+
+    const existingIds = existingRelations.map((rel) => rel[foreignKeyColumn]);
+
+    // 2. Xác định ID cần thêm và cần xóa
+    const idsToAdd = newIds.filter((id) => !existingIds.includes(id));
+    const idsToRemove = existingIds.filter((id) => !newIds.includes(id));
+
+    // 3. Xóa các quan hệ cũ
+    if (idsToRemove.length > 0) {
+      await manager
+        .createQueryBuilder()
+        .delete()
+        .from(tableName)
+        .where('user_id = :userId', { userId })
+        .andWhere(`${foreignKeyColumn} IN (:...idsToRemove)`, { idsToRemove })
+        .execute();
     }
 
-    // Lưu user với các quan hệ đã cập nhật
-    await this.userRepository.save(existingUser);
-    this.updateUserCount();
+    // 4. Thêm các quan hệ mới
+    if (idsToAdd.length > 0) {
+      const values = idsToAdd.map((id) => ({
+        user_id: userId,
+        [foreignKeyColumn]: id,
+      }));
 
-    // Trả về user đã cập nhật với tất cả các quan hệ
-    return this.userRepository.findOneOrFail({
-      where: { id },
-      relations: ['majors', 'levels', 'technologies'],
-    });
+      await manager
+        .createQueryBuilder()
+        .insert()
+        .into(tableName)
+        .values(values)
+        .execute();
+    }
   }
 
   async remove(id: string): Promise<void> {

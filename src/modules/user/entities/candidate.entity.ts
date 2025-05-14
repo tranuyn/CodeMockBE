@@ -11,9 +11,6 @@ export class Candidate extends User {
   @Column('json', { array: true, nullable: true })
   educationBackground: ExperienceDetail[];
 
-  @Column('text', { array: true, nullable: true })
-  biography: string[];
-
   @Column({ nullable: true })
   average_point: number;
 
