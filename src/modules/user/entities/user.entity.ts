@@ -15,6 +15,7 @@ import { ExperienceDetail } from 'src/modules/common_entity/experience_detail.en
 import { Major } from 'src/modules/major/major.entity';
 import { Level } from 'src/modules/level/level.entity';
 import { InterviewSession } from 'src/modules/interview_session/entities/interview_session.entity';
+import { SkillItem } from 'src/modules/common_entity/skillItem';
 
 @Entity({ name: 'user' })
 @TableInheritance({ column: { type: 'varchar', name: 'role' } })
@@ -62,7 +63,7 @@ export class User extends BaseEntity {
   levels: Level[];
 
   @Column('text', { array: true, nullable: true })
-  skill: string[];
+  skill: SkillItem[];
 
   @Column({ nullable: true })
   educationLevel: string;
@@ -99,4 +100,7 @@ export class User extends BaseEntity {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  @Column('text', { nullable: true })
+  biography: string;
 }
