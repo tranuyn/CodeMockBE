@@ -7,13 +7,14 @@ import {
   JoinColumn,
   JoinTable,
   ManyToMany,
-  OneToOne,
 } from 'typeorm';
 import { InterviewSlot } from '../../interview_slot/entities/interviewSlot.entity';
 import { Mentor } from 'src/modules/user/entities/mentor.entity';
 import { Technology } from 'src/modules/technology/technology.entity';
 import { Major } from 'src/modules/major/major.entity';
 import { Level } from 'src/modules/level/level.entity';
+import { IsNumber } from 'class-validator';
+import { INTERVIEW_SESSION_STATUS } from 'src/libs/constant/status';
 
 @Entity()
 export class InterviewSession {
@@ -25,16 +26,24 @@ export class InterviewSession {
   mentor: Mentor;
 
   @Column({ type: 'timestamp' })
-  scheduleDateTime: Date;
+  startTime: Date;
 
-  @Column()
-  duration: number; // tổng thời lượng toàn buổi (phút)
+  @Column({ type: 'timestamp' })
+  endTime: Date;
+
+  @Column({ type: 'int', default: 0 })
+  @IsNumber()
+  totalSlots: number;
 
   @Column()
   slotDuration: number; // thời lượng mỗi slot (phút)
 
-  @Column()
-  status: string;
+  @Column({
+    type: 'enum',
+    enum: INTERVIEW_SESSION_STATUS,
+    default: INTERVIEW_SESSION_STATUS.UPCOMING,
+  })
+  status: INTERVIEW_SESSION_STATUS;
 
   @ManyToMany(() => Major)
   @JoinTable({
@@ -50,7 +59,7 @@ export class InterviewSession {
   })
   majors: Major[];
 
-  @OneToOne(() => Level)
+  @ManyToOne(() => Level)
   @JoinColumn({ name: 'level_id' })
   level: Level;
 
@@ -70,6 +79,12 @@ export class InterviewSession {
 
   @Column()
   sessionPrice: number;
+
+  @Column({ type: 'text' })
+  description: string;
+
+  @Column({ type: 'text', nullable: true })
+  requirement?: string;
 
   @Column({ nullable: true })
   meetingLink: string;
