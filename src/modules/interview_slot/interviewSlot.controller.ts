@@ -48,7 +48,7 @@ export class InterviewSlotController {
   // }
 
   @UseGuards(JwtAuthGuard)
-  @Get('me')
+  @Get('my-interview-slots')
   findByUser(@GetUser('id') userId: string) {
     return this.slotService.findByUserId(userId);
   }
