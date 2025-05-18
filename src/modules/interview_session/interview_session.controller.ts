@@ -5,15 +5,15 @@ import {
   Param,
   Post,
   Put,
-  Delete,
   UseGuards,
+  Patch,
 } from '@nestjs/common';
 import {
   CreateInterviewSessionDto,
   UpdateInterviewSessionDto,
 } from './dtos/request.dto';
 import { InterviewSessionService } from './interview_session.service';
-import { Public, Role, Roles } from 'src/decorator/customize';
+import { GetUser, Public, Role, Roles } from 'src/decorator/customize';
 import { JwtAuthGuard } from 'src/auth/passport/jwt-auth.guard';
 import { RoleGuard } from 'src/auth/passport/role.guard';
 
@@ -23,16 +23,28 @@ export class InterviewSessionController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RoleGuard)
-  @Roles(Role.CANDIDATE, Role.ADMIN)
+  @Roles(Role.MENTOR, Role.ADMIN)
   create(@Body() dto: CreateInterviewSessionDto) {
     return this.sessionService.create(dto);
   }
 
   @Put(':id')
   @UseGuards(JwtAuthGuard, RoleGuard)
-  @Roles(Role.CANDIDATE, Role.ADMIN)
+  @Roles(Role.MENTOR, Role.ADMIN)
   update(@Param('id') id: string, @Body() dto: UpdateInterviewSessionDto) {
     return this.sessionService.update(id, dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('my-interview-sessions')
+  findMySessions(@GetUser('id') userId: string) {
+    return this.sessionService.findByMentorId(userId);
+  }
+
+  @Public()
+  @Get()
+  findAll() {
+    return this.sessionService.findAll();
   }
 
   @Public()
@@ -41,14 +53,8 @@ export class InterviewSessionController {
     return this.sessionService.findById(id);
   }
 
-  @Public()
-  @Get('mentor/:mentorId')
-  findByMentor(@Param('mentorId') mentorId: string) {
-    return this.sessionService.findByMentorId(mentorId);
-  }
-
-  @Delete(':id')
-  delete(@Param('id') id: string) {
-    return this.sessionService.delete(id);
+  @Patch(':id/cancel')
+  cancel(@Param('id') id: string) {
+    return this.sessionService.cancel(id);
   }
 }

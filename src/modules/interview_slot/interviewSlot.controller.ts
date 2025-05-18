@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Put,
   UseGuards,
@@ -10,9 +11,7 @@ import {
 import { InterviewSlotService } from './interviewSlot.service';
 import { GetUser, Public, Role, Roles } from 'src/decorator/customize';
 import {
-  CancelInterviewSlotDto,
   CreateInterviewSlotDto,
-  RegisterInterviewSlotDto,
   UpdateInterviewSlotDto,
 } from './dtos/request.dto';
 import { JwtAuthGuard } from 'src/auth/passport/jwt-auth.guard';
@@ -42,15 +41,21 @@ export class InterviewSlotController {
     return this.InterviewSlotService.findAll();
   }
 
-  @Public()
-  @Get('user/:userId')
-  findByUser(@Param('userId') userId: string) {
-    return this.InterviewSlotService.findByUserId(userId);
+  // @Public()
+  // @Get('user/:userId')
+  // findByUser(@Param('userId') userId: string) {
+  //   return this.InterviewSlotService.findByUserId(userId);
+  // }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('my-interview-slots')
+  findByUser(@GetUser('id') userId: string) {
+    return this.slotService.findByUserId(userId);
   }
 
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles(Role.CANDIDATE)
-  @Put(':id/register')
+  @Post(':id/register')
   async registerCandidate(
     @Param('id') slotId: string,
     @GetUser('id') candidateId: string,
@@ -63,7 +68,7 @@ export class InterviewSlotController {
 
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles(Role.CANDIDATE)
-  @Put(':id/cancel')
+  @Patch(':id/cancel')
   async cancelSlot(
     @Param('id') slotId: string,
     @GetUser('id') candidateId: string,

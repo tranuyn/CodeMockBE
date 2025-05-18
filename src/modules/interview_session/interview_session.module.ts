@@ -6,6 +6,8 @@ import { InterviewSession } from './entities/interview_session.entity';
 import { User } from '../user/entities/user.entity';
 import { InterviewSlot } from '../interview_slot/entities/interviewSlot.entity';
 import { Technology } from '../technology/technology.entity';
+import { Major } from '../major/major.entity';
+import { Level } from '../level/level.entity';
 
 @Module({
   imports: [
@@ -14,6 +16,8 @@ import { Technology } from '../technology/technology.entity';
       InterviewSlot,
       User,
       Technology,
+      Major,
+      Level,
     ]),
   ],
   controllers: [InterviewSessionController],

@@ -1,21 +1,23 @@
+import { Expose } from 'class-transformer';
 import { INTERVIEW_SLOT_STATUS } from 'src/libs/constant/status';
 import { FeedbackResultDto } from 'src/modules/feedback/dtos/feedback_result.dto';
+import { UserResultDto } from 'src/modules/user/dto/CandidateResult.dto';
 
 export class InterviewSlotResultDto {
-  slotId: string;
+  @Expose() slotId: string;
 
-  candidateId?: string;
+  @Expose() candidate?: UserResultDto;
 
-  sessionId: string;
+  @Expose() sessionId: string;
 
-  startTime: Date;
-  endTime: Date;
+  @Expose() startTime: Date;
+  @Expose() endTime: Date;
 
-  status: INTERVIEW_SLOT_STATUS;
+  @Expose() status: INTERVIEW_SLOT_STATUS;
 
-  isPaid: boolean;
+  @Expose() isPaid: boolean;
 
-  note?: string;
+  @Expose() note?: string;
 
-  feedback?: FeedbackResultDto;
+  @Expose() feedback?: FeedbackResultDto;
 }

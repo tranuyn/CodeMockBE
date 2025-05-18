@@ -5,9 +5,16 @@ import {
   OneToMany,
   ManyToOne,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
 } from 'typeorm';
 import { InterviewSlot } from '../../interview_slot/entities/interviewSlot.entity';
 import { Mentor } from 'src/modules/user/entities/mentor.entity';
+import { Technology } from 'src/modules/technology/technology.entity';
+import { Major } from 'src/modules/major/major.entity';
+import { Level } from 'src/modules/level/level.entity';
+import { IsNumber } from 'class-validator';
+import { INTERVIEW_SESSION_STATUS } from 'src/libs/constant/status';
 
 @Entity()
 export class InterviewSession {
@@ -19,28 +26,65 @@ export class InterviewSession {
   mentor: Mentor;
 
   @Column({ type: 'timestamp' })
-  scheduleDateTime: Date;
+  startTime: Date;
 
-  @Column()
-  duration: number; // tổng thời lượng toàn buổi (phút)
+  @Column({ type: 'timestamp' })
+  endTime: Date;
+
+  @Column({ type: 'int', default: 0 })
+  @IsNumber()
+  totalSlots: number;
 
   @Column()
   slotDuration: number; // thời lượng mỗi slot (phút)
 
-  @Column()
-  status: string;
+  @Column({
+    type: 'enum',
+    enum: INTERVIEW_SESSION_STATUS,
+    default: INTERVIEW_SESSION_STATUS.UPCOMING,
+  })
+  status: INTERVIEW_SESSION_STATUS;
 
-  @Column('simple-array')
-  major_id: string[];
+  @ManyToMany(() => Major)
+  @JoinTable({
+    name: 'interviewSession_majors',
+    joinColumn: {
+      name: 'sessionId',
+      referencedColumnName: 'sessionId',
+    },
+    inverseJoinColumn: {
+      name: 'majorId',
+      referencedColumnName: 'id',
+    },
+  })
+  majors: Major[];
 
-  @Column()
-  level_id: string;
+  @ManyToOne(() => Level)
+  @JoinColumn({ name: 'level_id' })
+  level: Level;
 
-  @Column({ type: 'simple-array', nullable: true })
-  requiredTechnology: string[];
+  @ManyToMany(() => Technology)
+  @JoinTable({
+    name: 'interviewSession_technologies',
+    joinColumn: {
+      name: 'sessionId',
+      referencedColumnName: 'sessionId',
+    },
+    inverseJoinColumn: {
+      name: 'technologyId',
+      referencedColumnName: 'id',
+    },
+  })
+  requiredTechnologies: Technology[];
 
   @Column()
   sessionPrice: number;
+
+  @Column({ type: 'text' })
+  description: string;
+
+  @Column({ type: 'text', nullable: true })
+  requirement?: string;
 
   @Column({ nullable: true })
   meetingLink: string;

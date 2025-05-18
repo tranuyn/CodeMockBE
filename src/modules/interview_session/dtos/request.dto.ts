@@ -11,23 +11,20 @@ export class CreateInterviewSessionDto {
   mentorId: string;
 
   @IsDateString()
-  scheduleDateTime: Date;
+  startTime: Date;
 
   @IsNumber()
-  duration: number;
+  totalSlots: number;
 
   @IsNumber()
   slotDuration: number;
 
-  @IsString()
-  status: string;
-
   @IsArray()
   @IsString({ each: true })
-  major_id: string[];
+  majorIds: string[];
 
   @IsString()
-  level_id: string;
+  levelId: string;
 
   @IsArray()
   @IsString({ each: true })
@@ -43,16 +40,36 @@ export class CreateInterviewSessionDto {
   @IsOptional()
   @IsString()
   recordingURL?: string;
+
+  @IsString()
+  description: string;
+
+  @IsOptional()
+  @IsString()
+  requirement?: string;
 }
 
 export class UpdateInterviewSessionDto {
   @IsOptional()
   @IsDateString()
-  scheduleDateTime?: Date;
+  startTime?: Date;
+
+  @IsOptional()
+  @IsDateString()
+  endTime?: Date;
 
   @IsOptional()
   @IsNumber()
-  duration?: number;
+  totalSlots?: number;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  majorIds?: string[];
+
+  @IsOptional()
+  @IsString()
+  levelId?: string;
 
   @IsOptional()
   @IsNumber()
@@ -69,4 +86,16 @@ export class UpdateInterviewSessionDto {
   @IsOptional()
   @IsString()
   recordingURL?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  requiredTechnologyIds: string[];
+
+  @IsString()
+  description: string;
+
+  @IsOptional()
+  @IsString()
+  requirement?: string;
 }

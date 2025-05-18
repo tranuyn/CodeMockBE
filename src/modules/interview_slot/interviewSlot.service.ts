@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
-  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -59,15 +58,15 @@ export class InterviewSlotService {
 
   async findBySessionId(sessionId: string): Promise<InterviewSlot[]> {
     return await this.interviewSlotRepo.find({
-      where: { interviewSession: { sessionId: sessionId } }, // Sử dụng đúng tên thuộc tính
-      relations: ['feedback'], // Đảm bảo feedback cũng là một mối quan hệ trong InterviewSlot
+      where: { interviewSession: { sessionId: sessionId } },
+      relations: ['feedback'],
     });
   }
 
   async findOne(id: string): Promise<InterviewSlot> {
     const slot = await this.interviewSlotRepo.findOne({
       where: { slotId: id },
-      relations: ['interviewSession', 'feedback'],
+      relations: ['interviewSession', 'candidate', 'feedback'],
     });
 
     if (!slot) {
@@ -91,6 +90,7 @@ export class InterviewSlotService {
   ): Promise<InterviewSlot> {
     const slot = await this.interviewSlotRepo.findOne({
       where: { slotId },
+      relations: ['interviewSession'],
     });
 
     if (!slot) {
@@ -98,7 +98,47 @@ export class InterviewSlotService {
     }
 
     if (slot.status !== INTERVIEW_SLOT_STATUS.AVAILABLE) {
-      throw new BadRequestException(`Slot đã được đăng ký hoặc không khả dụng`);
+      throw new BadRequestException(`Slot không khả dụng`);
+    }
+
+    const sessionId = slot.interviewSession.sessionId;
+    const existingSlot = await this.interviewSlotRepo.findOne({
+      where: {
+        candidate: { id: candidateId },
+        interviewSession: { sessionId },
+      },
+    });
+
+    if (existingSlot) {
+      throw new BadRequestException(
+        `Bạn đã đăng ký một slot trong session này rồi`,
+      );
+    }
+
+    const newSlotStart = new Date(slot.startTime);
+    const newSlotEnd = new Date(slot.endTime);
+
+    // Lấy tất cả slot mà candidate đã đăng ký trước đó (trạng thái BOOKED)
+    const candidateSlots = await this.interviewSlotRepo.find({
+      where: {
+        candidate: { id: candidateId },
+        status: INTERVIEW_SLOT_STATUS.BOOKED,
+      },
+      relations: ['interviewSession'],
+    });
+
+    // Kiểm tra trùng thời gian
+    const hasTimeConflict = candidateSlots.some((existing) => {
+      const existingStart = new Date(existing.startTime);
+      const existingEnd = new Date(existing.endTime);
+
+      return existingStart < newSlotEnd && existingEnd > newSlotStart;
+    });
+
+    if (hasTimeConflict) {
+      throw new BadRequestException(
+        'Bạn đã có một slot khác trùng thời gian với slot này.',
+      );
     }
 
     slot.candidate = { id: candidateId } as Candidate;
@@ -112,6 +152,7 @@ export class InterviewSlotService {
   ): Promise<InterviewSlot> {
     const slot = await this.interviewSlotRepo.findOne({
       where: { slotId },
+      relations: ['candidate'],
     });
 
     if (!slot) {

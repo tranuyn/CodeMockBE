@@ -24,14 +24,15 @@ export class RoleGuard implements CanActivate {
       return true;
     }
 
-    const { user } = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest();
+    const user = request.user.payload;
 
-    if (!user || !user.roles) {
+    if (!user || !user.role) {
       throw new ForbiddenException(
         'Bạn không có quyền truy cập tài nguyên này',
       );
     }
 
-    return requiredRoles.some((role) => user.roles.includes(role));
+    return requiredRoles.some((role) => user.role.includes(role));
   }
 }
