@@ -138,36 +138,23 @@ export class UserService {
 
       // Xử lý majors nếu được cung cấp
       if (majorIds !== undefined) {
-        await this.updateRelationships(
-          manager,
-          'user_major',
-          'major_id',
-          id,
-          majorIds,
-        );
+        existingUser.majors = majorIds.map((id) => ({ id }) as Major);
       }
 
-      // Xử lý levels nếu được cung cấp
+      // Gán lại mảng levels nếu có
       if (levelIds !== undefined) {
-        await this.updateRelationships(
-          manager,
-          'user_level',
-          'level_id',
-          id,
-          levelIds,
+        existingUser.levels = levelIds.map((id) => ({ id }) as Level);
+      }
+
+      // Gán lại mảng technologies nếu có
+      if (technologyIds !== undefined) {
+        existingUser.technologies = technologyIds.map(
+          (id) => ({ id }) as Technology,
         );
       }
 
-      // Xử lý technologies nếu được cung cấp
-      if (technologyIds !== undefined) {
-        await this.updateRelationships(
-          manager,
-          'user_technology',
-          'technology_id',
-          id,
-          technologyIds,
-        );
-      }
+      // Lưu user cùng tất cả relations
+      await manager.save(existingUser);
 
       this.updateUserCount();
 
@@ -177,55 +164,6 @@ export class UserService {
         relations: ['majors', 'levels', 'technologies'],
       });
     });
-  }
-
-  // Hàm helper để cập nhật các mối quan hệ
-  private async updateRelationships(
-    manager: EntityManager,
-    tableName: string,
-    foreignKeyColumn: string,
-    userId: string,
-    newIds: string[],
-  ): Promise<void> {
-    // 1. Lấy danh sách các ID hiện có
-    const existingRelations = await manager
-      .createQueryBuilder()
-      .select(foreignKeyColumn)
-      .from(tableName, 'rel')
-      .where('user_id = :userId', { userId })
-      .getRawMany();
-
-    const existingIds = existingRelations.map((rel) => rel[foreignKeyColumn]);
-
-    // 2. Xác định ID cần thêm và cần xóa
-    const idsToAdd = newIds.filter((id) => !existingIds.includes(id));
-    const idsToRemove = existingIds.filter((id) => !newIds.includes(id));
-
-    // 3. Xóa các quan hệ cũ
-    if (idsToRemove.length > 0) {
-      await manager
-        .createQueryBuilder()
-        .delete()
-        .from(tableName)
-        .where('user_id = :userId', { userId })
-        .andWhere(`${foreignKeyColumn} IN (:...idsToRemove)`, { idsToRemove })
-        .execute();
-    }
-
-    // 4. Thêm các quan hệ mới
-    if (idsToAdd.length > 0) {
-      const values = idsToAdd.map((id) => ({
-        user_id: userId,
-        [foreignKeyColumn]: id,
-      }));
-
-      await manager
-        .createQueryBuilder()
-        .insert()
-        .into(tableName)
-        .values(values)
-        .execute();
-    }
   }
 
   async remove(id: string): Promise<void> {

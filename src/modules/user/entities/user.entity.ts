@@ -55,14 +55,14 @@ export class User extends BaseEntity {
   majors: Major[];
 
   // Lưu mảng JSON mà không dùng array: true
-  @Column('json', { nullable: true })
+  @Column('jsonb', { nullable: true })
   experiences: ExperienceDetail[];
 
   @ManyToMany(() => Level, (level) => level.users, { cascade: ['insert'] })
   @JoinTable({ name: 'user_levels' })
   levels: Level[];
 
-  @Column('text', { array: true, nullable: true })
+  @Column('jsonb', { nullable: true })
   skill: SkillItem[];
 
   @Column({ nullable: true })
@@ -103,4 +103,7 @@ export class User extends BaseEntity {
 
   @Column('text', { nullable: true })
   biography: string;
+
+  @Column('jsonb', { nullable: true })
+  educationBackground: ExperienceDetail[];
 }

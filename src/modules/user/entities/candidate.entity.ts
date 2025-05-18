@@ -8,9 +8,6 @@ export class Candidate extends User {
   @Column({ nullable: true })
   resumeUrl: string;
 
-  @Column('json', { array: true, nullable: true })
-  educationBackground: ExperienceDetail[];
-
   @Column({ nullable: true })
   average_point: number;
 
