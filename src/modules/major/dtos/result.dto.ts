@@ -1,5 +1,7 @@
+// major-result.dto.ts
 import { Expose } from 'class-transformer';
-export class TechnologyResultDto {
+
+export class MajorResultDto {
   @Expose() id: string;
   @Expose() name: string;
 }

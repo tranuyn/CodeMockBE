@@ -1,41 +1,23 @@
+import { Expose } from 'class-transformer';
 import { INTERVIEW_SLOT_STATUS } from 'src/libs/constant/status';
 import { FeedbackResultDto } from 'src/modules/feedback/dtos/feedback_result.dto';
-import { CandidateResultDto } from 'src/modules/user/dto/CandidateResult.dto';
+import { UserResultDto } from 'src/modules/user/dto/CandidateResult.dto';
 
 export class InterviewSlotResultDto {
-  slotId: string;
+  @Expose() slotId: string;
 
-  candidate?: CandidateResultDto;
+  @Expose() candidate?: UserResultDto;
 
-  sessionId: string;
+  @Expose() sessionId: string;
 
-  startTime: Date;
-  endTime: Date;
+  @Expose() startTime: Date;
+  @Expose() endTime: Date;
 
-  status: INTERVIEW_SLOT_STATUS;
+  @Expose() status: INTERVIEW_SLOT_STATUS;
 
-  isPaid: boolean;
+  @Expose() isPaid: boolean;
 
-  note?: string;
+  @Expose() note?: string;
 
-  feedback?: FeedbackResultDto;
+  @Expose() feedback?: FeedbackResultDto;
 }
-
-// function toSlotDto(slot: InterviewSlot): InterviewSlotResultDto {
-//   return {
-//     slotId: slot.slotId,
-//     candidate: slot.candidate
-//       ? {
-//           id: slot.candidate.id,
-//           username: slot.candidate.username,
-//           email: slot.candidate.email,
-//         }
-//       : undefined,
-//     interviewSession: undefined, // bạn có thể gán nếu muốn
-//     startTime: slot.startTime,
-//     endTime: slot.endTime,
-//     status: slot.status,
-//     isPaid: slot.isPaid,
-//     feedback: slot.feedback ? toFeedbackDto(slot.feedback) : undefined,
-//   };
-// }

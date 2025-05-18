@@ -42,6 +42,12 @@ export class InterviewSessionController {
   }
 
   @Public()
+  @Get()
+  findAll() {
+    return this.sessionService.findAll();
+  }
+
+  @Public()
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.sessionService.findById(id);

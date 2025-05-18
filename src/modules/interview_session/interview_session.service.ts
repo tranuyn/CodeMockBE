@@ -19,6 +19,8 @@ import { User } from '../user/entities/user.entity';
 import { Technology } from '../technology/technology.entity';
 import { Major } from '../major/major.entity';
 import { Level } from '../level/level.entity';
+import { InterviewSessionResultDto } from './dtos/result.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class InterviewSessionService {
@@ -257,8 +259,8 @@ export class InterviewSessionService {
     });
   }
 
-  async findAll(): Promise<InterviewSession[]> {
-    return await this.sessionRepo.find({
+  async findAll(): Promise<InterviewSessionResultDto[]> {
+    const sessions = await this.sessionRepo.find({
       relations: [
         'mentor',
         'interviewSlots',
@@ -267,10 +269,13 @@ export class InterviewSessionService {
         'level',
       ],
     });
+    return plainToInstance(InterviewSessionResultDto, sessions, {
+      excludeExtraneousValues: true,
+    });
   }
 
-  async findByMentorId(mentorId: string): Promise<InterviewSession[]> {
-    return await this.sessionRepo.find({
+  async findByMentorId(mentorId: string): Promise<InterviewSessionResultDto[]> {
+    const sessions = await this.sessionRepo.find({
       where: { mentor: { id: mentorId } },
       relations: [
         'mentor',
@@ -280,8 +285,11 @@ export class InterviewSessionService {
         'level',
       ],
     });
-  }
 
+    return plainToInstance(InterviewSessionResultDto, sessions, {
+      excludeExtraneousValues: true,
+    });
+  }
   async cancel(sessionId: string): Promise<InterviewSession> {
     const session = await this.sessionRepo.findOne({
       where: { sessionId },
