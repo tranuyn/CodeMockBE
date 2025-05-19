@@ -65,7 +65,7 @@ export class AuthService {
       httpOnly: true,
       secure: false,
       sameSite: 'lax',
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 ngày
+      maxAge: 1000 * 30,
     });
 
     const {
@@ -174,5 +174,59 @@ export class AuthService {
     return {
       message: 'Tài khoản của bạn đã được kích hoạt thành công!',
     };
+  }
+
+  async refreshToken(req: Request, res: Response) {
+    try {
+      // Lấy token từ Authorization header
+      const authHeader = req.headers['authorization'];
+      if (!authHeader) {
+        throw new UnauthorizedException(
+          'Không tìm thấy token trong authorization header',
+        );
+      }
+
+      // Kiểm tra định dạng "Bearer <token>"
+      const parts = authHeader.split(' ');
+      if (parts.length !== 2 || parts[0] !== 'Bearer') {
+        throw new UnauthorizedException(
+          'Định dạng Authorization header không hợp lệ',
+        );
+      }
+
+      const token = parts[1];
+
+      // Verify token
+      const decoded = this.jwtService.verify(token, { ignoreExpiration: true });
+
+      // Kiểm tra thông tin người dùng trong token
+      if (!decoded || !decoded.id) {
+        throw new UnauthorizedException('Token không hợp lệ');
+      }
+
+      const payload = {
+        id: decoded.id,
+        email: decoded.email,
+        username: decoded.username,
+        role: decoded.role,
+      };
+
+      const new_access_token = this.jwtService.sign(payload, {
+        expiresIn: '3d',
+      });
+
+      res.cookie('Token', new_access_token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 ngày
+      });
+
+      return {
+        access_token: new_access_token,
+      };
+    } catch (error) {
+      throw new UnauthorizedException('Token không hợp lệ: ' + error.message);
+    }
   }
 }

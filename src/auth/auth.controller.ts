@@ -8,6 +8,7 @@ import {
   Request,
   UseGuards,
   Res,
+  Patch,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './passport/jwt-auth.guard';
@@ -87,5 +88,15 @@ export class AuthController {
   @Post('verify-code')
   async verifyCode(@Body() verifyDto: VerifyCodeDto) {
     return this.authService.verifyCode(verifyDto);
+  }
+
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @Patch('refresh-token')
+  async refreshToken(
+    @Request() req,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService.refreshToken(req, res);
   }
 }
