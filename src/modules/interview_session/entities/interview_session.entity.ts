@@ -31,6 +31,9 @@ export class InterviewSession {
   @Column({ type: 'timestamp' })
   endTime: Date;
 
+  @Column({ type: 'text' })
+  title: string;
+
   @Column({ type: 'int', default: 0 })
   @IsNumber()
   totalSlots: number;

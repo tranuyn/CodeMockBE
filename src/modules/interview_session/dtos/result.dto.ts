@@ -10,6 +10,8 @@ export class InterviewSessionResultDto {
   @Expose() sessionId: string;
   @Expose() @Type(() => UserResultDto) mentor: UserResultDto;
 
+  @Expose() title: string;
+
   @Expose() startTime: Date;
   @Expose() endTime: Date;
   @Expose() totalSlots: number;

@@ -7,15 +7,18 @@ import {
   Put,
   UseGuards,
   Patch,
+  Query,
 } from '@nestjs/common';
 import {
   CreateInterviewSessionDto,
+  SearchInterviewSessionRequest,
   UpdateInterviewSessionDto,
 } from './dtos/request.dto';
 import { InterviewSessionService } from './interview_session.service';
 import { GetUser, Public, Role, Roles } from 'src/decorator/customize';
 import { JwtAuthGuard } from 'src/auth/passport/jwt-auth.guard';
 import { RoleGuard } from 'src/auth/passport/role.guard';
+import { Result } from 'src/common/dtos/result.dto';
 
 @Controller('interview_sessions')
 export class InterviewSessionController {
@@ -45,6 +48,12 @@ export class InterviewSessionController {
   @Get()
   findAll() {
     return this.sessionService.findAll();
+  }
+
+  @Public()
+  @Get('search')
+  async search(@Query() query: SearchInterviewSessionRequest): Promise<Result> {
+    return await this.sessionService.search(query);
   }
 
   @Public()

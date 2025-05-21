@@ -11,11 +11,11 @@ import {
   OneToMany,
   BaseEntity,
 } from 'typeorm';
-import { ExperienceDetail } from 'src/modules/common_entity/experience_detail.entity';
+import { ExperienceDetail } from 'src/common/common_entity/experience_detail.entity';
 import { Major } from 'src/modules/major/major.entity';
 import { Level } from 'src/modules/level/level.entity';
 import { InterviewSession } from 'src/modules/interview_session/entities/interview_session.entity';
-import { SkillItem } from 'src/modules/common_entity/skillItem';
+import { SkillItem } from 'src/common/common_entity/skillItem';
 
 @Entity({ name: 'user' })
 @TableInheritance({ column: { type: 'varchar', name: 'role' } })
