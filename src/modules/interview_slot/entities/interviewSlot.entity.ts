@@ -48,4 +48,7 @@ export class InterviewSlot {
 
   @Column({ default: false })
   isPaid: boolean;
+
+  @Column({ nullable: true })
+  resumeUrl: string;
 }
