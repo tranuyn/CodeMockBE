@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import {
   CreateInterviewSessionDto,
+  SearchInterviewSessionRequest,
   UpdateInterviewSessionDto,
 } from './dtos/request.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -21,6 +22,7 @@ import { Major } from '../major/major.entity';
 import { Level } from '../level/level.entity';
 import { InterviewSessionResultDto } from './dtos/result.dto';
 import { plainToInstance } from 'class-transformer';
+import { paginate } from 'src/libs/utils/paginate';
 
 @Injectable()
 export class InterviewSessionService {
@@ -277,6 +279,59 @@ export class InterviewSessionService {
     });
   }
 
+  async search(query: SearchInterviewSessionRequest) {
+    const qb = this.sessionRepo
+      .createQueryBuilder('session')
+      .leftJoinAndSelect('session.mentor', 'mentor')
+      .leftJoinAndSelect('session.requiredTechnologies', 'requiredTechnologies')
+      .leftJoinAndSelect('session.majors', 'majors')
+      .leftJoinAndSelect('session.level', 'level');
+
+    if (query.search) {
+      qb.andWhere('(session.title ILIKE :kw)', {
+        kw: `%${query.search}%`,
+      });
+    }
+
+    if (query.mentorId) {
+      qb.andWhere('mentor.id = :mentorId', { mentorId: query.mentorId });
+    }
+
+    if (query.status) {
+      qb.andWhere('session.status = :status', { status: query.status });
+    }
+
+    // Định nghĩa các trường sắp xếp hợp lệ
+    const validSortFields = [
+      'startTime',
+      'endTime',
+      'createdAt',
+      'updatedAt',
+      'totalSlots',
+      'sessionPrice',
+    ];
+    const sortField = validSortFields.includes(query.sortField)
+      ? query.sortField
+      : 'startTime';
+    const sortOrder = query.sortOrder === 'DESC' ? 'DESC' : 'ASC';
+
+    // Thực hiện phân trang
+    return paginate<InterviewSession, InterviewSessionResultDto>(
+      () =>
+        qb
+          .orderBy(`session.${sortField}`, sortOrder)
+          .skip((query.pageNumber - 1) * query.pageSize)
+          .take(query.pageSize)
+          .getManyAndCount(),
+      query.pageSize,
+      query.pageNumber,
+      (entity) =>
+        plainToInstance(InterviewSessionResultDto, entity, {
+          excludeExtraneousValues: true,
+        }),
+    );
+  }
+
   async findByMentorId(mentorId: string): Promise<InterviewSessionResultDto[]> {
     const sessions = await this.sessionRepo.find({
       where: { mentor: { id: mentorId } },
@@ -293,6 +348,7 @@ export class InterviewSessionService {
       excludeExtraneousValues: true,
     });
   }
+
   async cancel(sessionId: string): Promise<InterviewSession> {
     const session = await this.sessionRepo.findOne({
       where: { sessionId },
