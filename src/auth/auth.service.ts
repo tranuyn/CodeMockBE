@@ -158,9 +158,9 @@ export class AuthService {
       throw new BadRequestException('Mã xác minh không chính xác.');
     }
 
-    if (user.is_active) {
-      throw new BadRequestException('Tài khoản đã được kích hoạt.');
-    }
+    // if (user.is_active) {
+    //   throw new BadRequestException('Tài khoản đã được kích hoạt.');
+    // }
 
     const now = dayjs();
 

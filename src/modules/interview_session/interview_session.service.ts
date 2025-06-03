@@ -45,6 +45,9 @@ export class InterviewSessionService {
 
     @InjectRepository(Level)
     private levelRepo: Repository<Level>,
+
+    @InjectRepository(InterviewSlot)
+    private slotRepo: Repository<InterviewSlot>,
   ) {}
 
   async create(dto: CreateInterviewSessionDto): Promise<InterviewSession> {
@@ -398,5 +401,21 @@ export class InterviewSessionService {
     });
 
     return await this.sessionRepo.save(session); // cascade slot update
+  }
+
+  async isCandidateRegisteredInSession(
+    sessionId: string,
+    candidateId: string,
+  ): Promise<boolean> {
+    // Đếm số slot mà candidate đã BOOKED trong session này
+    const count = await this.slotRepo.count({
+      where: {
+        candidate: { id: candidateId },
+        interviewSession: { sessionId },
+        status: INTERVIEW_SLOT_STATUS.BOOKED,
+      },
+    });
+
+    return count > 0;
   }
 }

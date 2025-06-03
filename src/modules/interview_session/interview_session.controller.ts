@@ -66,4 +66,17 @@ export class InterviewSessionController {
   cancel(@Param('id') id: string) {
     return this.sessionService.cancel(id);
   }
+
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles(Role.CANDIDATE)
+  @Post(':id/checkRegister')
+  async isCandidateRegisteredInSession(
+    @Param('id') sessionId: string,
+    @GetUser('id') candidateId: string,
+  ) {
+    return this.sessionService.isCandidateRegisteredInSession(
+      sessionId,
+      candidateId,
+    );
+  }
 }
