@@ -23,6 +23,10 @@ import { Level } from '../level/level.entity';
 import { InterviewSessionResultDto } from './dtos/result.dto';
 import { plainToInstance } from 'class-transformer';
 import { paginate } from 'src/libs/utils/paginate';
+import { SortOrder } from 'src/common/enum/sortOder';
+import { SortField } from 'src/common/enum/sortField';
+import { Mentor } from '../user/entities/mentor.entity';
+import { sanitizeMentor } from 'src/common/utilities/sanitize-mentor.util';
 
 @Injectable()
 export class InterviewSessionService {
@@ -248,8 +252,10 @@ export class InterviewSessionService {
     return await this.sessionRepo.save(session);
   }
 
-  async findById(id: string): Promise<InterviewSession> {
-    return await this.sessionRepo.findOne({
+  async findById(
+    id: string,
+  ): Promise<Omit<InterviewSession, 'mentor'> & { mentor: Partial<Mentor> }> {
+    const session = await this.sessionRepo.findOne({
       where: { sessionId: id },
       relations: [
         'mentor',
@@ -259,6 +265,15 @@ export class InterviewSessionService {
         'level',
       ],
     });
+
+    if (!session) return null;
+
+    const safeMentor = sanitizeMentor(session.mentor);
+
+    return {
+      ...session,
+      mentor: safeMentor,
+    };
   }
 
   async findAll(): Promise<InterviewSessionResultDto[]> {
@@ -298,25 +313,33 @@ export class InterviewSessionService {
       qb.andWhere('session.status = :status', { status: query.status });
     }
 
-    // Định nghĩa các trường sắp xếp hợp lệ
-    const validSortFields = [
-      'startTime',
-      'endTime',
-      'createdAt',
-      'updatedAt',
-      'totalSlots',
-      'sessionPrice',
-    ];
-    const sortField = validSortFields.includes(query.sortField)
+    const sortFieldMap: Record<SortField, string> = {
+      [SortField.TITLE]: 'session.title',
+      [SortField.CREATED_AT]: 'session.createdAt',
+      [SortField.UPDATED_AT]: 'session.updatedAt',
+      [SortField.LEVEL]: 'level.name',
+      [SortField.MAJOR]: 'majors.name',
+    };
+
+    const validSortField = Object.values(SortField).includes(
+      query.sortField as SortField,
+    )
       ? query.sortField
-      : 'startTime';
-    const sortOrder = query.sortOrder === 'DESC' ? 'DESC' : 'ASC';
+      : SortField.CREATED_AT;
+
+    const resolvedSortField = sortFieldMap[validSortField];
+
+    const sortOrder = Object.values(SortOrder).includes(
+      query.sortOrder as SortOrder,
+    )
+      ? query.sortOrder
+      : SortOrder.ASC;
 
     // Thực hiện phân trang
     return paginate<InterviewSession, InterviewSessionResultDto>(
       () =>
         qb
-          .orderBy(`session.${sortField}`, sortOrder)
+          .orderBy(resolvedSortField, sortOrder)
           .skip((query.pageNumber - 1) * query.pageSize)
           .take(query.pageSize)
           .getManyAndCount(),

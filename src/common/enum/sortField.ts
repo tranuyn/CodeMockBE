@@ -1,5 +1,7 @@
 export enum SortField {
-  NAME = 'name',
-  // CREATED_AT = 'createdAt',
-  // UPDATED_AT = 'updatedAt',
+  TITLE = 'title',
+  CREATED_AT = 'createdAt',
+  UPDATED_AT = 'updatedAt',
+  LEVEL = 'level',
+  MAJOR = 'majors',
 }

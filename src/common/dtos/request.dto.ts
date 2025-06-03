@@ -14,7 +14,7 @@ export class PaginationQuery {
 
   @IsOptional()
   @IsIn(Object.values(SortField))
-  sortField: SortField = SortField.NAME;
+  sortField: SortField = SortField.TITLE;
 
   @IsOptional()
   @IsIn([SortOrder.ASC, SortOrder.DESC])
