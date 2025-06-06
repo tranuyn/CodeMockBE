@@ -8,14 +8,13 @@ import {
   ManyToMany,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToMany,
   BaseEntity,
 } from 'typeorm';
 import { ExperienceDetail } from 'src/common/common_entity/experience_detail.entity';
 import { Major } from 'src/modules/major/major.entity';
 import { Level } from 'src/modules/level/level.entity';
-import { InterviewSession } from 'src/modules/interview_session/entities/interview_session.entity';
 import { SkillItem } from 'src/common/common_entity/skillItem';
+import { ROLE } from 'src/common/enums/role.enum';
 
 @Entity({ name: 'user' })
 @TableInheritance({ column: { type: 'varchar', name: 'role' } })
@@ -35,8 +34,8 @@ export class User extends BaseEntity {
   @Column({ nullable: true, default: 'LOCAL' })
   account_type: string;
 
-  @Column({ nullable: true, default: 'USER' })
-  role: string;
+  @Column({ nullable: true, type: 'enum', enum: ROLE, default: ROLE.CANDIDATE })
+  role: ROLE;
 
   @Column({ nullable: true, default: false })
   is_active: boolean;
@@ -63,7 +62,7 @@ export class User extends BaseEntity {
   levels: Level[];
 
   @Column('jsonb', { nullable: true })
-  skill: SkillItem[];
+  skills: SkillItem[];
 
   @Column({ nullable: true })
   educationLevel: string;

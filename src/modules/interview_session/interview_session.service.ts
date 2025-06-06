@@ -23,8 +23,8 @@ import { Level } from '../level/level.entity';
 import { InterviewSessionResultDto } from './dtos/result.dto';
 import { plainToInstance } from 'class-transformer';
 import { paginate } from 'src/libs/utils/paginate';
-import { SortOrder } from 'src/common/enum/sortOder';
-import { SortField } from 'src/common/enum/sortField';
+import { SortOrder } from 'src/common/enums/sortOder';
+import { SortField } from 'src/common/enums/sortField';
 import { Mentor } from '../user/entities/mentor.entity';
 import { sanitizeMentor } from 'src/common/utilities/sanitize-mentor.util';
 

@@ -6,7 +6,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-// import { ApiPropertyOptional } from '@nestjs/swagger';
+import { PartialType } from '@nestjs/mapped-types';
 import { PaginationQuery } from 'src/common/dtos/request.dto';
 import { INTERVIEW_SESSION_STATUS } from 'src/libs/constant/status';
 
@@ -56,58 +56,16 @@ export class CreateInterviewSessionDto {
   requirement?: string;
 }
 
-export class UpdateInterviewSessionDto {
-  @IsOptional()
-  @IsDateString()
-  startTime?: Date;
-
+export class UpdateInterviewSessionDto extends PartialType(
+  CreateInterviewSessionDto,
+) {
   @IsOptional()
   @IsDateString()
   endTime?: Date;
 
   @IsOptional()
-  @IsNumber()
-  totalSlots?: number;
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  majorIds?: string[];
-
-  @IsOptional()
-  @IsString()
-  levelId?: string;
-
-  @IsOptional()
-  @IsNumber()
-  slotDuration?: number;
-
-  @IsOptional()
   @IsString()
   status?: string;
-
-  @IsOptional()
-  @IsString()
-  meetingLink?: string;
-
-  @IsOptional()
-  @IsString()
-  recordingURL?: string;
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  requiredTechnologyIds: string[];
-
-  @IsString()
-  title?: string;
-
-  @IsString()
-  description: string;
-
-  @IsOptional()
-  @IsString()
-  requirement?: string;
 }
 
 export class SearchInterviewSessionRequest extends PaginationQuery {
