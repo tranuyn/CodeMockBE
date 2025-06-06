@@ -22,6 +22,7 @@ import timezone from 'dayjs/plugin/timezone';
 import { Major } from 'src/modules/major/major.entity';
 import { Level } from 'src/modules/level/level.entity';
 import { Technology } from 'src/modules/technology/technology.entity';
+import { ROLE } from 'src/common/enums/role.enum';
 
 @Injectable()
 export class AuthService {
@@ -108,6 +109,7 @@ export class AuthService {
       is_active: false,
       code_id: activationCode,
       code_expired: dayjs().utc().add(15, 'minutes').toDate(),
+      role: ROLE.CANDIDATE,
       // gán các relation nếu có
       majors: majors?.map((id) => ({ id })) ?? [],
       levels: levels?.map((id) => ({ id })) ?? [],
