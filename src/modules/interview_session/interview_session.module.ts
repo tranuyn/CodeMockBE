@@ -8,6 +8,7 @@ import { InterviewSlot } from '../interview_slot/entities/interviewSlot.entity';
 import { Technology } from '../technology/technology.entity';
 import { Major } from '../major/major.entity';
 import { Level } from '../level/level.entity';
+import { ZegoModule } from '../ZegoCloud/zego.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { Level } from '../level/level.entity';
       Major,
       Level,
     ]),
+    ZegoModule,
   ],
   controllers: [InterviewSessionController],
   providers: [InterviewSessionService],

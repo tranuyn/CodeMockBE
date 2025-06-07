@@ -24,7 +24,6 @@ import { ROLE } from 'src/common/enums/role.enum';
 @Controller('interview_sessions')
 export class InterviewSessionController {
   constructor(private readonly sessionService: InterviewSessionService) {}
-
   @Post()
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles(ROLE.MENTOR, ROLE.ADMIN)
@@ -79,5 +78,15 @@ export class InterviewSessionController {
       sessionId,
       candidateId,
     );
+  }
+
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Get(':id/joinMeeting')
+  async joinMeeting(
+    @Param('id') id: string,
+    @Query('expireSeconds') expireSeconds: number,
+    @GetUser('id') userId: string,
+  ) {
+    return this.sessionService.joinMeeting(id, expireSeconds, userId);
   }
 }

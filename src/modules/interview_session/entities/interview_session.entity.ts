@@ -109,4 +109,8 @@ export class InterviewSession {
     onUpdate: 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  @Column({ nullable: true })
+  roomId: string;
 }
