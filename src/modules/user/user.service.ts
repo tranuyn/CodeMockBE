@@ -87,7 +87,7 @@ export class UserService {
   async findOne(id: string): Promise<User | Mentor | Candidate> {
     const user = await this.userRepository.findOne({
       where: { id },
-      relations: ['majors', 'levels', 'technologies'],
+      relations: ['majors', 'level', 'technologies'],
     });
     if (!user) {
       throw new BadRequestException(`Không tìm thấy người dùng với id ${id}`);
@@ -98,7 +98,7 @@ export class UserService {
   async findByEmail(email: string): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { email },
-      relations: ['majors', 'levels', 'technologies'],
+      relations: ['majors', 'level', 'technologies'],
     });
     if (!user)
       throw new BadRequestException(
@@ -120,7 +120,7 @@ export class UserService {
       // Đầu tiên lấy user hiện tại
       const existingUser = await manager.findOne(User, {
         where: { id },
-        relations: ['majors', 'levels', 'technologies'],
+        relations: ['majors', 'level', 'technologies'],
       });
 
       if (!existingUser) {
@@ -142,8 +142,10 @@ export class UserService {
       }
 
       // Gán lại mảng levels nếu có
-      if (levelIds !== undefined) {
-        existingUser.levels = levelIds.map((id) => ({ id }) as Level);
+      if (levelIds !== undefined && levelIds.length > 0) {
+        existingUser.level = { id: levelIds[0] } as Level;
+      } else if (levelIds?.length === 0) {
+        existingUser.level = null;
       }
 
       // Gán lại mảng technologies nếu có
@@ -161,7 +163,7 @@ export class UserService {
       // Trả về user đã cập nhật với tất cả các quan hệ
       return manager.findOneOrFail(User, {
         where: { id },
-        relations: ['majors', 'levels', 'technologies'],
+        relations: ['majors', 'level', 'technologies'],
       });
     });
   }
@@ -192,12 +194,12 @@ export class UserService {
       .update() // 2) khởi tạo UpdateQueryBuilder trên entity đã bind
       .set({
         user_count: () => `
-      (
-        SELECT COUNT(*)
-        FROM user_levels um
-        WHERE um."levelId" = id
-      )
-    `,
+          (
+            SELECT COUNT(*)
+            FROM "user" u
+            WHERE u."levelId" = level.id
+          )
+        `,
       })
       .execute();
 

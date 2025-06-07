@@ -11,13 +11,14 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { InterviewSlotService } from './interviewSlot.service';
-import { GetUser, Public, Role, Roles } from 'src/decorator/customize';
+import { GetUser, Public, Roles } from 'src/decorator/customize';
 import {
   CreateInterviewSlotDto,
   UpdateInterviewSlotDto,
 } from './dtos/request.dto';
 import { JwtAuthGuard } from 'src/auth/passport/jwt-auth.guard';
 import { RoleGuard } from 'src/auth/passport/role.guard';
+import { ROLE } from 'src/common/enums/role.enum';
 
 @Controller('interview-slot')
 export class InterviewSlotController {
@@ -56,7 +57,7 @@ export class InterviewSlotController {
   }
 
   @UseGuards(JwtAuthGuard, RoleGuard)
-  @Roles(Role.CANDIDATE)
+  @Roles(ROLE.CANDIDATE)
   @Post(':id/register')
   async registerCandidate(
     @Param('id') slotId: string,
@@ -69,7 +70,7 @@ export class InterviewSlotController {
   }
 
   @UseGuards(JwtAuthGuard, RoleGuard)
-  @Roles(Role.CANDIDATE)
+  @Roles(ROLE.CANDIDATE)
   @Patch(':id/cancel')
   async cancelSlot(
     @Param('id') slotId: string,

@@ -1,11 +1,4 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToMany,
-  OneToMany,
-  JoinTable,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { User } from 'src/modules/user/entities/user.entity';
 
 @Entity('level')
@@ -19,6 +12,6 @@ export class Level {
   @Column({ default: 0 })
   user_count: number;
 
-  @ManyToMany(() => User, (user) => user.levels)
+  @OneToMany(() => User, (user) => user.level)
   users: User[];
 }

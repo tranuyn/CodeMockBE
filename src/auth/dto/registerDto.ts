@@ -1,6 +1,13 @@
 import { Type } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { PrimaryGeneratedColumn, Timestamp } from 'typeorm';
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { ROLE } from 'src/common/enums/role.enum';
+import { PrimaryGeneratedColumn } from 'typeorm';
 
 export class RegisterDto {
   @PrimaryGeneratedColumn('uuid') // Hoặc 'increment' nếu bạn muốn ID số tự tăng
@@ -15,8 +22,8 @@ export class RegisterDto {
   email: string;
 
   @IsNotEmpty()
-  @IsString()
-  role: string;
+  @IsEnum(ROLE)
+  role: ROLE;
 
   @IsOptional()
   password: string;
@@ -34,7 +41,8 @@ export class RegisterDto {
   majors: string[];
 
   @IsOptional()
-  levels: string[];
+  @IsString()
+  levelId: string;
 
   @IsOptional()
   phone: string;

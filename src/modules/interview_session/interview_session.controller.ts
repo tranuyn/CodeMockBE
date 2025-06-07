@@ -15,24 +15,25 @@ import {
   UpdateInterviewSessionDto,
 } from './dtos/request.dto';
 import { InterviewSessionService } from './interview_session.service';
-import { GetUser, Public, Role, Roles } from 'src/decorator/customize';
+import { GetUser, Public, Roles } from 'src/decorator/customize';
 import { JwtAuthGuard } from 'src/auth/passport/jwt-auth.guard';
 import { RoleGuard } from 'src/auth/passport/role.guard';
 import { Result } from 'src/common/dtos/result.dto';
+import { ROLE } from 'src/common/enums/role.enum';
 
 @Controller('interview_sessions')
 export class InterviewSessionController {
   constructor(private readonly sessionService: InterviewSessionService) {}
   @Post()
   @UseGuards(JwtAuthGuard, RoleGuard)
-  @Roles(Role.MENTOR, Role.ADMIN)
+  @Roles(ROLE.MENTOR, ROLE.ADMIN)
   create(@Body() dto: CreateInterviewSessionDto) {
     return this.sessionService.create(dto);
   }
 
   @Put(':id')
   @UseGuards(JwtAuthGuard, RoleGuard)
-  @Roles(Role.MENTOR, Role.ADMIN)
+  @Roles(ROLE.MENTOR, ROLE.ADMIN)
   update(@Param('id') id: string, @Body() dto: UpdateInterviewSessionDto) {
     return this.sessionService.update(id, dto);
   }
@@ -67,7 +68,7 @@ export class InterviewSessionController {
   }
 
   @UseGuards(JwtAuthGuard, RoleGuard)
-  @Roles(Role.CANDIDATE)
+  @Roles(ROLE.CANDIDATE)
   @Post(':id/checkRegister')
   async isCandidateRegisteredInSession(
     @Param('id') sessionId: string,

@@ -1,7 +1,7 @@
 import { Transform } from 'class-transformer';
 import { IsIn, IsOptional } from 'class-validator';
-import { SortField } from '../enum/sortField';
-import { SortOrder } from '../enum/sortOder';
+import { SortField } from '../enums/sortField';
+import { SortOrder } from '../enums/sortOder';
 
 export class PaginationQuery {
   @IsOptional()
@@ -14,7 +14,7 @@ export class PaginationQuery {
 
   @IsOptional()
   @IsIn(Object.values(SortField))
-  sortField: SortField = SortField.NAME;
+  sortField: SortField = SortField.TITLE;
 
   @IsOptional()
   @IsIn([SortOrder.ASC, SortOrder.DESC])
