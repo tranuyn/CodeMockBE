@@ -316,12 +316,23 @@ export class InterviewSessionService {
       qb.andWhere('session.status = :status', { status: query.status });
     }
 
+    if (query.levelId) {
+      qb.andWhere('level.id = :levelId', { levelId: query.levelId });
+    }
+
+    if (query.majorIds) {
+      const majorIdsArray = query.majorIds.split(',').map((id) => id.trim());
+      if (majorIdsArray.length > 0) {
+        qb.andWhere('majors.id IN (:...majorIds)', { majorIds: majorIdsArray });
+      }
+    }
+
     const sortFieldMap: Record<SortField, string> = {
       [SortField.TITLE]: 'session.title',
       [SortField.CREATED_AT]: 'session.createdAt',
       [SortField.UPDATED_AT]: 'session.updatedAt',
-      [SortField.LEVEL]: 'level.name',
-      [SortField.MAJOR]: 'majors.name',
+      // [SortField.LEVEL]: 'level.name',
+      // [SortField.MAJOR]: 'majors.name',
     };
 
     const validSortField = Object.values(SortField).includes(

@@ -83,4 +83,12 @@ export class SearchInterviewSessionRequest extends PaginationQuery {
   @IsOptional()
   @IsEnum(INTERVIEW_SESSION_STATUS)
   status?: INTERVIEW_SESSION_STATUS;
+
+  @IsOptional()
+  @IsString()
+  levelId?: string;
+
+  @IsOptional()
+  @IsString()
+  majorIds?: string;
 }

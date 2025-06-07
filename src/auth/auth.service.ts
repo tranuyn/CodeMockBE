@@ -98,7 +98,7 @@ export class AuthService {
     //const activationExpires = dayjs().utc().add(15, 'minutes').toDate();
 
     // 4. Tách các trường relation ra ngoài
-    const { majors, levels, technologies, ...rest } = registerDto;
+    const { majors, levelId, technologies, ...rest } = registerDto;
 
     dayjs.extend(utc);
     dayjs.extend(timezone);
@@ -112,7 +112,7 @@ export class AuthService {
       role: ROLE.CANDIDATE,
       // gán các relation nếu có
       majors: majors?.map((id) => ({ id })) ?? [],
-      levels: levels?.map((id) => ({ id })) ?? [],
+      level: levelId ? ({ id: levelId } as Level) : null,
       technologies: technologies?.map((id) => ({ id })) ?? [],
     });
 

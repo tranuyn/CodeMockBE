@@ -41,7 +41,8 @@ export class RegisterDto {
   majors: string[];
 
   @IsOptional()
-  levels: string[];
+  @IsString()
+  levelId: string;
 
   @IsOptional()
   phone: string;

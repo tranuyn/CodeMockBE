@@ -9,6 +9,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   BaseEntity,
+  ManyToOne,
 } from 'typeorm';
 import { ExperienceDetail } from 'src/common/common_entity/experience_detail.entity';
 import { Major } from 'src/modules/major/major.entity';
@@ -57,9 +58,11 @@ export class User extends BaseEntity {
   @Column('jsonb', { nullable: true })
   experiences: ExperienceDetail[];
 
-  @ManyToMany(() => Level, (level) => level.users, { cascade: ['insert'] })
-  @JoinTable({ name: 'user_levels' })
-  levels: Level[];
+  @ManyToOne(() => Level, (level) => level.users, {
+    nullable: true,
+    eager: true,
+  })
+  level: Level;
 
   @Column('jsonb', { nullable: true })
   skills: SkillItem[];
