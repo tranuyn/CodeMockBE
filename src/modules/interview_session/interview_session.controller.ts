@@ -81,7 +81,7 @@ export class InterviewSessionController {
   }
 
   @UseGuards(JwtAuthGuard, RoleGuard)
-  @Get('/:id/joinMeeting')
+  @Get(':id/joinMeeting')
   async joinMeeting(
     @Param('id') id: string,
     @Query('expireSeconds') expireSeconds: number,

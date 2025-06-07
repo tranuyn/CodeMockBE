@@ -142,6 +142,7 @@ export class InterviewSessionService {
       id: In(requiredTechnologyIds),
     });
 
+    const newRoomId = uuidv4();
     const session = this.sessionRepo.create({
       totalSlots,
       slotDuration,
@@ -152,7 +153,7 @@ export class InterviewSessionService {
       level,
       majors,
       requiredTechnologies: technologies,
-      roomId: uuidv4(),
+      roomId: newRoomId,
       ...rest,
     });
 
