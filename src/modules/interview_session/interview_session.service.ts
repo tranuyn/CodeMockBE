@@ -1,3 +1,4 @@
+import { ZegoTokenService } from 'src/modules/ZegoCloud/zegoCloudService';
 import {
   Injectable,
   BadRequestException,
@@ -23,6 +24,7 @@ import { Level } from '../level/level.entity';
 import { InterviewSessionResultDto } from './dtos/result.dto';
 import { plainToInstance } from 'class-transformer';
 import { paginate } from 'src/libs/utils/paginate';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class InterviewSessionService {
@@ -44,6 +46,8 @@ export class InterviewSessionService {
 
     @InjectRepository(InterviewSlot)
     private slotRepo: Repository<InterviewSlot>,
+
+    private readonly ZegoTokenService: ZegoTokenService,
   ) {}
 
   async create(dto: CreateInterviewSessionDto): Promise<InterviewSession> {
@@ -144,6 +148,7 @@ export class InterviewSessionService {
       level,
       majors,
       requiredTechnologies: technologies,
+      roomId: uuidv4(),
       ...rest,
     });
 
@@ -394,5 +399,45 @@ export class InterviewSessionService {
     });
 
     return count > 0;
+  }
+
+  async joinMeeting(id: string, expireSeconds = 3600, userId: string) {
+    const session = await this.sessionRepo.findOne({
+      where: { sessionId: id },
+      relations: ['interviewSlots', 'mentor'],
+    });
+    if (!session) {
+      throw new BadRequestException('Session không tồn tại');
+    }
+
+    const listCandidateId =
+      session.interviewSlots
+        ?.map((slot) => slot.candidate?.id)
+        .filter((id) => !!id) || [];
+    if (
+      session.mentor &&
+      userId != session.mentor.id &&
+      !listCandidateId.includes(userId)
+    ) {
+      throw new BadRequestException(
+        'Bạn không phải thành viên của meeting này',
+      );
+    }
+
+    if (!session.roomId) {
+      session.roomId = uuidv4();
+      await this.sessionRepo.save(session);
+    }
+
+    const token = this.ZegoTokenService.generateOneToOneToken(
+      userId,
+      session.roomId,
+      expireSeconds,
+    );
+
+    return {
+      roomID: session.roomId,
+      token,
+    };
   }
 }

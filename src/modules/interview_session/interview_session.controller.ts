@@ -23,7 +23,6 @@ import { Result } from 'src/common/dtos/result.dto';
 @Controller('interview_sessions')
 export class InterviewSessionController {
   constructor(private readonly sessionService: InterviewSessionService) {}
-
   @Post()
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles(Role.MENTOR, Role.ADMIN)
@@ -78,5 +77,15 @@ export class InterviewSessionController {
       sessionId,
       candidateId,
     );
+  }
+
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Get('/:id/joinMeeting')
+  async joinMeeting(
+    @Param('id') id: string,
+    @Query('expireSeconds') expireSeconds: number,
+    @GetUser('id') userId: string,
+  ) {
+    return this.sessionService.joinMeeting(id, expireSeconds, userId);
   }
 }
