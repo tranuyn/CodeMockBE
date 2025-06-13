@@ -89,4 +89,16 @@ export class InterviewSessionController {
   ) {
     return this.sessionService.joinMeeting(id, expireSeconds, userId);
   }
+
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Post(':id/start')
+  startRoom(@Param('id') id: string, @GetUser('id') userId: string) {
+    return this.sessionService.startRoom(id, userId);
+  }
+
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Post(':id/join')
+  joinRoom(@Param('id') id: string, @GetUser('id') userId: string) {
+    return this.sessionService.joinRoom(id, userId);
+  }
 }

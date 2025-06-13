@@ -40,4 +40,5 @@ export class InterviewSessionResultDto {
 
   @Expose() description: string;
   @Expose() requirement?: string;
+  @Expose() roomId: string;
 }
