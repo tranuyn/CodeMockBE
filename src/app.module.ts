@@ -17,6 +17,7 @@ import { InterviewSessionModule } from './modules/interview_session/interview_se
 import { InterviewSlotModule } from './modules/interview_slot/interviewSlot.module';
 import { RatingModule } from './modules/rating/rating.modules';
 import { FeedbackModule } from './modules/feedback/feedback.modules';
+import { MoMoPaymentModule } from './modules/payment/momo-payment.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -45,6 +46,7 @@ import { FeedbackModule } from './modules/feedback/feedback.modules';
     TechnologyModule,
     RatingModule,
     FeedbackModule,
+    MoMoPaymentModule,
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
