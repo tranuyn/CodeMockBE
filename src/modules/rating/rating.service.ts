@@ -64,4 +64,20 @@ export class RatingService {
       throw new NotFoundException(`Rating with id ${id} not found`);
     }
   }
+
+  async findByMentorId(mentorId: string): Promise<Rating[]> {
+    const ratings = await this.ratingRepo.find({
+      where: { mentor: { id: mentorId } },
+      relations: ['candidate', 'slot', 'mentor', 'interviewSession'],
+    });
+    return ratings;
+  }
+
+  async findByCandidateId(candidateId: string): Promise<Rating[]> {
+    const ratings = await this.ratingRepo.find({
+      where: { candidate: { id: candidateId } },
+      relations: ['candidate', 'slot', 'mentor', 'interviewSession'],
+    });
+    return ratings;
+  }
 }

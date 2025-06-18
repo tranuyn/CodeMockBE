@@ -35,6 +35,20 @@ export class RatingController {
     return this.ratingService.findOne(id);
   }
 
+  // GET /ratings/mentor/:mentorId
+  @Get('mentor/:mentorId')
+  async getByMentor(@Param('mentorId') mentorId: string): Promise<Rating[]> {
+    return this.ratingService.findByMentorId(mentorId);
+  }
+
+  // GET /ratings/candidate/:candidateId
+  @Get('candidate/:candidateId')
+  async getByCandidate(
+    @Param('candidateId') candidateId: string,
+  ): Promise<Rating[]> {
+    return this.ratingService.findByCandidateId(candidateId);
+  }
+
   @Public()
   @Patch(':id')
   update(
