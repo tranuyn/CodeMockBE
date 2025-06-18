@@ -10,6 +10,7 @@ import { InterviewSession } from 'src/modules/interview_session/entities/intervi
 import { Feedback } from 'src/modules/feedback/entities/feedback.entity';
 import { INTERVIEW_SLOT_STATUS } from 'src/libs/constant/status';
 import { Candidate } from 'src/modules/user/entities/candidate.entity';
+import { Rating } from 'src/modules/rating/rating.entity';
 
 @Entity()
 export class InterviewSlot {
@@ -45,6 +46,9 @@ export class InterviewSlot {
     nullable: true,
   })
   feedback: Feedback;
+
+  @OneToOne(() => Rating, (rating) => rating.slot, { nullable: true })
+  rating: Rating;
 
   @Column({ default: false })
   isPaid: boolean;

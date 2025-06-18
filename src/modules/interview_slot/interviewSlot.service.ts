@@ -52,7 +52,7 @@ export class InterviewSlotService {
 
   async findAll(): Promise<InterviewSlot[]> {
     return await this.interviewSlotRepo.find({
-      relations: ['interviewSession', 'feedback'],
+      relations: ['interviewSession', 'feedback', 'rating'],
     });
   }
 
@@ -66,7 +66,7 @@ export class InterviewSlotService {
   async findOne(id: string): Promise<InterviewSlot> {
     const slot = await this.interviewSlotRepo.findOne({
       where: { slotId: id },
-      relations: ['interviewSession', 'candidate', 'feedback'],
+      relations: ['interviewSession', 'candidate', 'feedback', 'rating'],
     });
 
     if (!slot) {
