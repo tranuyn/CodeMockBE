@@ -6,5 +6,5 @@ export class UserResultDto {
   @Expose() username: string;
   @Expose() email: string;
   @Expose() role: ROLE;
-  @Expose() avatar: string;
+  @Expose() avatarUrl: string;
 }

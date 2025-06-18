@@ -56,6 +56,10 @@ export class UpdateInterviewSlotDto {
 export class RegisterInterviewSlotDto {
   @IsString()
   candidateId: string;
+
+  @IsOptional()
+  @IsString()
+  resumeUrl?: string;
 }
 export class CancelInterviewSlotDto {
   @IsString()

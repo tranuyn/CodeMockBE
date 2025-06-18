@@ -14,6 +14,7 @@ import { InterviewSlotService } from './interviewSlot.service';
 import { GetUser, Public, Roles } from 'src/decorator/customize';
 import {
   CreateInterviewSlotDto,
+  RegisterInterviewSlotDto,
   UpdateInterviewSlotDto,
 } from './dtos/request.dto';
 import { JwtAuthGuard } from 'src/auth/passport/jwt-auth.guard';
@@ -58,15 +59,16 @@ export class InterviewSlotController {
 
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles(ROLE.CANDIDATE)
-  @Post(':id/register')
+  @Put(':id/register')
   async registerCandidate(
     @Param('id') slotId: string,
+    @Body() dto: RegisterInterviewSlotDto,
     @GetUser('id') candidateId: string,
   ) {
-    return this.InterviewSlotService.registerCandidateToSlot(
-      slotId,
+    return this.InterviewSlotService.registerCandidateToSlot(slotId, {
+      ...dto,
       candidateId,
-    );
+    });
   }
 
   @UseGuards(JwtAuthGuard, RoleGuard)

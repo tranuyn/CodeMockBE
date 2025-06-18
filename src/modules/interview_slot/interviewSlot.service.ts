@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { InterviewSlot } from './entities/interviewSlot.entity';
 import {
   CreateInterviewSlotDto,
+  RegisterInterviewSlotDto,
   UpdateInterviewSlotDto,
 } from './dtos/request.dto';
 import { INTERVIEW_SLOT_STATUS } from 'src/libs/constant/status';
@@ -46,7 +47,15 @@ export class InterviewSlotService {
   async findByUserId(candidateId: string): Promise<InterviewSlot[]> {
     return await this.interviewSlotRepo.find({
       where: { candidate: { id: candidateId } },
-      relations: ['interviewSession', 'feedback'],
+      relations: [
+        'interviewSession',
+        'interviewSession.mentor',
+        'interviewSession.level',
+        'interviewSession.majors',
+        'interviewSession.requiredTechnologies',
+        'interviewSession.interviewSlots',
+        'feedback',
+      ],
     });
   }
 
@@ -86,8 +95,10 @@ export class InterviewSlotService {
 
   async registerCandidateToSlot(
     slotId: string,
-    candidateId: string,
+    dto: RegisterInterviewSlotDto,
   ): Promise<InterviewSlot> {
+    const { candidateId, resumeUrl } = dto;
+
     const slot = await this.interviewSlotRepo.findOne({
       where: { slotId },
       relations: ['interviewSession'],
@@ -118,7 +129,6 @@ export class InterviewSlotService {
     const newSlotStart = new Date(slot.startTime);
     const newSlotEnd = new Date(slot.endTime);
 
-    // Lấy tất cả slot mà candidate đã đăng ký trước đó (trạng thái BOOKED)
     const candidateSlots = await this.interviewSlotRepo.find({
       where: {
         candidate: { id: candidateId },
@@ -127,11 +137,9 @@ export class InterviewSlotService {
       relations: ['interviewSession'],
     });
 
-    // Kiểm tra trùng thời gian
     const hasTimeConflict = candidateSlots.some((existing) => {
       const existingStart = new Date(existing.startTime);
       const existingEnd = new Date(existing.endTime);
-
       return existingStart < newSlotEnd && existingEnd > newSlotStart;
     });
 
@@ -143,6 +151,12 @@ export class InterviewSlotService {
 
     slot.candidate = { id: candidateId } as Candidate;
     slot.status = INTERVIEW_SLOT_STATUS.BOOKED;
+
+    // ✅ Thêm dòng này để lưu resumeUrl nếu có
+    if (resumeUrl) {
+      slot.resumeUrl = resumeUrl;
+    }
+
     return await this.interviewSlotRepo.save(slot);
   }
 

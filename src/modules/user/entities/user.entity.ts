@@ -92,7 +92,7 @@ export class User extends BaseEntity {
   coinBalance: number;
 
   @Column({ nullable: true })
-  avataUrl: string;
+  avatarUrl: string;
 
   @Column({ nullable: true })
   address: string;
