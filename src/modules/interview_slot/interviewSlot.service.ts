@@ -8,11 +8,19 @@ import { Repository } from 'typeorm';
 import { InterviewSlot } from './entities/interviewSlot.entity';
 import {
   CreateInterviewSlotDto,
+  RegisterInterviewSlotDto,
+  SearchInterviewSlotRequest,
   UpdateInterviewSlotDto,
 } from './dtos/request.dto';
 import { INTERVIEW_SLOT_STATUS } from 'src/libs/constant/status';
 import { UserService } from '../user/user.service';
 import { Candidate } from '../user/entities/candidate.entity';
+import { Result } from 'src/common/dtos/result.dto';
+import { SortField } from 'src/common/enums/sortField';
+import { SortOrder } from 'src/common/enums/sortOder';
+import { paginate } from 'src/libs/utils/paginate';
+import { InterviewSlotResultDto } from './dtos/result.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class InterviewSlotService {
@@ -46,7 +54,15 @@ export class InterviewSlotService {
   async findByUserId(candidateId: string): Promise<InterviewSlot[]> {
     return await this.interviewSlotRepo.find({
       where: { candidate: { id: candidateId } },
-      relations: ['interviewSession', 'feedback'],
+      relations: [
+        'interviewSession',
+        'interviewSession.mentor',
+        'interviewSession.level',
+        'interviewSession.majors',
+        'interviewSession.requiredTechnologies',
+        'interviewSession.interviewSlots',
+        'feedback',
+      ],
     });
   }
 
@@ -76,6 +92,50 @@ export class InterviewSlotService {
     return slot;
   }
 
+  async searchSlot(query: SearchInterviewSlotRequest) {
+    const qb = this.interviewSlotRepo
+      .createQueryBuilder('slot')
+      .leftJoinAndSelect('slot.interviewSession', 'session')
+      .leftJoinAndSelect('slot.feedback', 'feedback')
+      .leftJoinAndSelect('slot.rating', 'rating')
+      .leftJoinAndSelect('slot.candidate', 'candidate');
+
+    if (query.candidateId) {
+      qb.andWhere('candidate.id = :candidateId', {
+        candidateId: query.candidateId,
+      });
+    }
+
+    qb.andWhere('slot.status = :status', {
+      status: INTERVIEW_SLOT_STATUS.DONE,
+    });
+
+    const sortFieldMap: Record<SortField, string> = {
+      [SortField.CREATED_AT]: 'slot.updatedAt',
+      [SortField.START_TIME]: 'slot.startTime',
+      [SortField.TITLE]: '',
+      [SortField.UPDATED_AT]: 'slot.updatedAt',
+    };
+
+    const sortField = sortFieldMap[query.sortField || SortField.CREATED_AT];
+    const sortOrder = query.sortOrder === SortOrder.ASC ? 'ASC' : 'DESC';
+
+    return paginate<InterviewSlot, InterviewSlotResultDto>(
+      () =>
+        qb
+          .orderBy(sortField, sortOrder)
+          .skip((query.pageNumber - 1) * query.pageSize)
+          .take(query.pageSize)
+          .getManyAndCount(),
+      query.pageSize,
+      query.pageNumber,
+      (entity) =>
+        plainToInstance(InterviewSlotResultDto, entity, {
+          excludeExtraneousValues: true,
+        }),
+    );
+  }
+
   async delete(id: string): Promise<void> {
     const result = await this.interviewSlotRepo.delete({ slotId: id });
 
@@ -86,8 +146,10 @@ export class InterviewSlotService {
 
   async registerCandidateToSlot(
     slotId: string,
-    candidateId: string,
+    dto: RegisterInterviewSlotDto,
   ): Promise<InterviewSlot> {
+    const { candidateId, resumeUrl } = dto;
+
     const slot = await this.interviewSlotRepo.findOne({
       where: { slotId },
       relations: ['interviewSession'],
@@ -118,7 +180,6 @@ export class InterviewSlotService {
     const newSlotStart = new Date(slot.startTime);
     const newSlotEnd = new Date(slot.endTime);
 
-    // Lấy tất cả slot mà candidate đã đăng ký trước đó (trạng thái BOOKED)
     const candidateSlots = await this.interviewSlotRepo.find({
       where: {
         candidate: { id: candidateId },
@@ -127,11 +188,9 @@ export class InterviewSlotService {
       relations: ['interviewSession'],
     });
 
-    // Kiểm tra trùng thời gian
     const hasTimeConflict = candidateSlots.some((existing) => {
       const existingStart = new Date(existing.startTime);
       const existingEnd = new Date(existing.endTime);
-
       return existingStart < newSlotEnd && existingEnd > newSlotStart;
     });
 
@@ -143,6 +202,12 @@ export class InterviewSlotService {
 
     slot.candidate = { id: candidateId } as Candidate;
     slot.status = INTERVIEW_SLOT_STATUS.BOOKED;
+
+    // ✅ Thêm dòng này để lưu resumeUrl nếu có
+    if (resumeUrl) {
+      slot.resumeUrl = resumeUrl;
+    }
+
     return await this.interviewSlotRepo.save(slot);
   }
 
