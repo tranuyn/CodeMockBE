@@ -5,16 +5,19 @@ import {
   CreateDateColumn,
   JoinColumn,
   OneToOne,
+  ManyToOne,
 } from 'typeorm';
 import { InterviewSlot } from 'src/modules/interview_slot/entities/interviewSlot.entity';
+import { InterviewSession } from 'src/modules/interview_session/entities/interview_session.entity';
 
 @Entity()
 export class Feedback {
-  @PrimaryGeneratedColumn()
-  feedbackId: number;
+  @PrimaryGeneratedColumn('uuid')
+  feedbackId: string;
 
-  @Column()
-  sessionId: number;
+  @ManyToOne(() => InterviewSession, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'sessionId' })
+  session: InterviewSession;
 
   @Column({ type: 'text' })
   strengths: string;

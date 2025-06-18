@@ -475,4 +475,79 @@ export class InterviewSessionService {
       token,
     };
   }
+
+  async startRoom(interviewId: string, userId: string) {
+    const session = await this.sessionRepo.findOne({
+      where: { sessionId: interviewId },
+      relations: ['interviewSlots', 'mentor'],
+    });
+    if (!session) {
+      throw new BadRequestException('Session không tồn tại');
+    }
+
+    const listCandidateId =
+      session.interviewSlots
+        ?.map((slot) => slot.candidate?.id)
+        .filter((id) => !!id) || [];
+    if (
+      session.mentor &&
+      userId != session.mentor.id &&
+      !listCandidateId.includes(userId)
+    ) {
+      throw new BadRequestException(
+        'Bạn không phải thành viên của meeting này',
+      );
+    }
+
+    // Generate token for current user
+    const token = this.ZegoTokenService.generateToken(
+      userId.toString(),
+      session.roomId,
+    );
+
+    return {
+      roomId: session.roomId,
+      token: token,
+    };
+  }
+
+  async joinRoom(interviewId: string, userId: string) {
+    if (!interviewId || !userId) {
+      throw new BadRequestException('Thiếu interviewId hoặc userId');
+    }
+
+    const session = await this.sessionRepo.findOne({
+      where: { sessionId: interviewId },
+      relations: ['interviewSlots', 'mentor'],
+    });
+    if (!session) {
+      throw new BadRequestException('Session không tồn tại');
+    }
+
+    const listCandidateId =
+      session.interviewSlots
+        ?.map((slot) => slot.candidate?.id)
+        .filter((id) => !!id) || [];
+    if (
+      session.mentor &&
+      userId != session.mentor.id &&
+      !listCandidateId.includes(userId)
+    ) {
+      throw new BadRequestException(
+        'Bạn không phải thành viên của meeting này',
+      );
+    }
+
+    // Generate token
+    const token = this.ZegoTokenService.generateOneToOneToken(
+      userId.toString(),
+      session.roomId,
+      3600,
+    );
+
+    return {
+      roomId: session.roomId,
+      token: token,
+    };
+  }
 }
