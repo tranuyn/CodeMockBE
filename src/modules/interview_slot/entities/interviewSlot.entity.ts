@@ -47,7 +47,10 @@ export class InterviewSlot {
   })
   feedback: Feedback;
 
-  @OneToOne(() => Rating, (rating) => rating.slot, { nullable: true })
+  @OneToOne(() => Rating, (rating) => rating.slot, {
+    nullable: true,
+    cascade: true,
+  })
   rating: Rating;
 
   @Column({ default: false })

@@ -16,6 +16,7 @@ import { TechnologyModule } from './modules/technology/level.module';
 import { InterviewSessionModule } from './modules/interview_session/interview_session.module';
 import { InterviewSlotModule } from './modules/interview_slot/interviewSlot.module';
 import { RatingModule } from './modules/rating/rating.modules';
+import { FeedbackModule } from './modules/feedback/feedback.modules';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -43,6 +44,7 @@ import { RatingModule } from './modules/rating/rating.modules';
     InterviewSlotModule,
     TechnologyModule,
     RatingModule,
+    FeedbackModule,
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
