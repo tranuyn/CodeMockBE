@@ -21,7 +21,11 @@ export class InterviewSlot {
   @JoinColumn({ name: 'candidateId' })
   candidate: Candidate;
 
-  @Column({ default: INTERVIEW_SLOT_STATUS.AVAILABLE })
+  @Column({
+    type: 'enum',
+    enum: INTERVIEW_SLOT_STATUS,
+    default: INTERVIEW_SLOT_STATUS.AVAILABLE,
+  })
   status: INTERVIEW_SLOT_STATUS;
 
   @ManyToOne(() => InterviewSession, (session) => session.interviewSlots)

@@ -6,6 +6,7 @@ import {
   IsEnum,
   IsBoolean,
 } from 'class-validator';
+import { PaginationQuery } from 'src/common/dtos/request.dto';
 import { INTERVIEW_SLOT_STATUS } from 'src/libs/constant/status';
 
 export class CreateInterviewSlotDto {
@@ -64,4 +65,29 @@ export class RegisterInterviewSlotDto {
 export class CancelInterviewSlotDto {
   @IsString()
   candidateId: string;
+}
+
+export class SearchInterviewSlotRequest extends PaginationQuery {
+  // @ApiPropertyOptional({ description: 'Tìm theo tên tiêu đề hoặc mô tả' })
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  // @ApiPropertyOptional({ description: 'Lọc theo userId' })
+  @IsOptional()
+  @IsString()
+  candidateId: string;
+
+  // @ApiPropertyOptional({ description: 'Lọc theo status của session' })
+  @IsOptional()
+  @IsEnum(INTERVIEW_SLOT_STATUS)
+  status?: INTERVIEW_SLOT_STATUS.DONE;
+
+  @IsOptional()
+  @IsString()
+  levelId?: string;
+
+  @IsOptional()
+  @IsString()
+  majorIds?: string;
 }

@@ -1,4 +1,3 @@
-
 import { Expose } from 'class-transformer';
 import { ROLE } from 'src/common/enums/role.enum';
 export class UserResultDto {

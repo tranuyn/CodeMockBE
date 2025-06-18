@@ -3,7 +3,7 @@ export enum INTERVIEW_SLOT_STATUS {
   BOOKED = 'booked', // Đã đăng ký và chưa diễn ra
   CANCELED_LATE = 'canceled_late', // Hủy trễ (<48h), có vi phạm
   CANCELED = 'canceled', // Hủy bởi mentor
-  DONE = 'done', // Đã phỏng vấn và đánh giá
+  DONE = 'done', // Đã phỏng vấn
 }
 
 export enum INTERVIEW_SESSION_STATUS {

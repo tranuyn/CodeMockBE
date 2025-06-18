@@ -337,6 +337,7 @@ export class InterviewSessionService {
       [SortField.TITLE]: 'session.title',
       [SortField.CREATED_AT]: 'session.createdAt',
       [SortField.UPDATED_AT]: 'session.updatedAt',
+      [SortField.START_TIME]: 'session.startTime',
       // [SortField.LEVEL]: 'level.name',
       // [SortField.MAJOR]: 'majors.name',
     };

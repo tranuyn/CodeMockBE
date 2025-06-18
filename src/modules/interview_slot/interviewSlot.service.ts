@@ -9,11 +9,18 @@ import { InterviewSlot } from './entities/interviewSlot.entity';
 import {
   CreateInterviewSlotDto,
   RegisterInterviewSlotDto,
+  SearchInterviewSlotRequest,
   UpdateInterviewSlotDto,
 } from './dtos/request.dto';
 import { INTERVIEW_SLOT_STATUS } from 'src/libs/constant/status';
 import { UserService } from '../user/user.service';
 import { Candidate } from '../user/entities/candidate.entity';
+import { Result } from 'src/common/dtos/result.dto';
+import { SortField } from 'src/common/enums/sortField';
+import { SortOrder } from 'src/common/enums/sortOder';
+import { paginate } from 'src/libs/utils/paginate';
+import { InterviewSlotResultDto } from './dtos/result.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class InterviewSlotService {
@@ -83,6 +90,50 @@ export class InterviewSlotService {
     }
 
     return slot;
+  }
+
+  async searchSlot(query: SearchInterviewSlotRequest) {
+    const qb = this.interviewSlotRepo
+      .createQueryBuilder('slot')
+      .leftJoinAndSelect('slot.interviewSession', 'session')
+      .leftJoinAndSelect('slot.feedback', 'feedback')
+      .leftJoinAndSelect('slot.rating', 'rating')
+      .leftJoinAndSelect('slot.candidate', 'candidate');
+
+    if (query.candidateId) {
+      qb.andWhere('candidate.id = :candidateId', {
+        candidateId: query.candidateId,
+      });
+    }
+
+    qb.andWhere('slot.status = :status', {
+      status: INTERVIEW_SLOT_STATUS.DONE,
+    });
+
+    const sortFieldMap: Record<SortField, string> = {
+      [SortField.CREATED_AT]: 'slot.updatedAt',
+      [SortField.START_TIME]: 'slot.startTime',
+      [SortField.TITLE]: '',
+      [SortField.UPDATED_AT]: 'slot.updatedAt',
+    };
+
+    const sortField = sortFieldMap[query.sortField || SortField.CREATED_AT];
+    const sortOrder = query.sortOrder === SortOrder.ASC ? 'ASC' : 'DESC';
+
+    return paginate<InterviewSlot, InterviewSlotResultDto>(
+      () =>
+        qb
+          .orderBy(sortField, sortOrder)
+          .skip((query.pageNumber - 1) * query.pageSize)
+          .take(query.pageSize)
+          .getManyAndCount(),
+      query.pageSize,
+      query.pageNumber,
+      (entity) =>
+        plainToInstance(InterviewSlotResultDto, entity, {
+          excludeExtraneousValues: true,
+        }),
+    );
   }
 
   async delete(id: string): Promise<void> {

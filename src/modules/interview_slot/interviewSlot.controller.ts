@@ -15,11 +15,13 @@ import { GetUser, Public, Roles } from 'src/decorator/customize';
 import {
   CreateInterviewSlotDto,
   RegisterInterviewSlotDto,
+  SearchInterviewSlotRequest,
   UpdateInterviewSlotDto,
 } from './dtos/request.dto';
 import { JwtAuthGuard } from 'src/auth/passport/jwt-auth.guard';
 import { RoleGuard } from 'src/auth/passport/role.guard';
 import { ROLE } from 'src/common/enums/role.enum';
+import { Result } from 'src/common/dtos/result.dto';
 
 @Controller('interview-slot')
 export class InterviewSlotController {
@@ -55,6 +57,12 @@ export class InterviewSlotController {
   @Get('my-interview-slots')
   findByUser(@GetUser('id') userId: string) {
     return this.slotService.findByUserId(userId);
+  }
+
+  @Public()
+  @Get('search')
+  async search(@Query() query: SearchInterviewSlotRequest): Promise<Result> {
+    return this.slotService.searchSlot(query);
   }
 
   @UseGuards(JwtAuthGuard, RoleGuard)

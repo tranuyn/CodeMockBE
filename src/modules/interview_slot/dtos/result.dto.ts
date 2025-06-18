@@ -1,12 +1,15 @@
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import { INTERVIEW_SLOT_STATUS } from 'src/libs/constant/status';
 import { FeedbackResultDto } from 'src/modules/feedback/dtos/feedback_result.dto';
+import { InterviewSessionResultDto } from 'src/modules/interview_session/dtos/result.dto';
 import { UserResultDto } from 'src/modules/user/dto/CandidateResult.dto';
 
 export class InterviewSlotResultDto {
   @Expose() slotId: string;
 
-  @Expose() candidate?: UserResultDto;
+  @Expose()
+  @Type(() => UserResultDto)
+  candidate?: UserResultDto;
 
   @Expose() sessionId: string;
 
@@ -19,5 +22,12 @@ export class InterviewSlotResultDto {
 
   @Expose() note?: string;
 
-  @Expose() feedback?: FeedbackResultDto;
+  @Expose()
+  @Type(() => FeedbackResultDto)
+  feedback?: FeedbackResultDto;
+
+  @Expose() rating?: number;
+  @Expose()
+  @Type(() => InterviewSessionResultDto)
+  interviewSession: InterviewSessionResultDto;
 }
