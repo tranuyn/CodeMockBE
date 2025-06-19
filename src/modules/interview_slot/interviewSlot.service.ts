@@ -110,6 +110,20 @@ export class InterviewSlotService {
       status: INTERVIEW_SLOT_STATUS.DONE,
     });
 
+    if (query.slotDuration !== undefined) {
+      qb.andWhere('session.slotDuration = :slotDuration', {
+        slotDuration: query.slotDuration,
+      });
+    }
+
+    if (query.isFree !== undefined) {
+      if (query.isFree) {
+        qb.andWhere('session.sessionPrice = 0');
+      } else {
+        qb.andWhere('session.sessionPrice > 0');
+      }
+    }
+
     const sortFieldMap: Record<SortField, string> = {
       [SortField.CREATED_AT]: 'slot.updatedAt',
       [SortField.START_TIME]: 'slot.startTime',
