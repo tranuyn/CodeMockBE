@@ -64,6 +64,9 @@ export class RegisterInterviewSlotDto {
   @IsOptional()
   @IsString()
   resumeUrl?: string;
+
+  @IsOptional()
+  payByCodemockCoin?: boolean;
 }
 export class CancelInterviewSlotDto {
   @IsString()

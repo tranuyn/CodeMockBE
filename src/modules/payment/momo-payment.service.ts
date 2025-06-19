@@ -67,7 +67,7 @@ export class MoMoPaymentService {
       // Default values
       const amount = paymentData.amount;
       const orderInfo = paymentData.orderInfo || 'pay with MoMo';
-      const redirectUrl = 'https://localhost:3000/check-payment'; // FE
+      const redirectUrl = 'http://localhost:3000/features/payment/checkout'; // FE
       const ipnUrl = 'http://localhost:8081/check-payment'; //BE
       const requestType = 'captureWallet';
       const extraData = paymentData.extraData || '';

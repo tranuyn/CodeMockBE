@@ -62,4 +62,7 @@ export class InterviewSlot {
 
   @Column({ nullable: true })
   resumeUrl: string;
+
+  @Column({ type: 'text', nullable: true })
+  cancelReason: string;
 }
