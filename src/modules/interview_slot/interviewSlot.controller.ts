@@ -85,7 +85,12 @@ export class InterviewSlotController {
   async cancelSlot(
     @Param('id') slotId: string,
     @GetUser('id') candidateId: string,
+    @Body('cancelReason') cancelReason: string,
   ) {
-    return this.slotService.cancelSlotByCandidate(slotId, candidateId);
+    return this.slotService.cancelSlotByCandidate(
+      slotId,
+      candidateId,
+      cancelReason,
+    );
   }
 }
