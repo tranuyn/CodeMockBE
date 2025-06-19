@@ -6,6 +6,7 @@ export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
 // Tạo decorator để lấy user từ JWT
 // user.decorator.ts
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { Transform } from 'class-transformer';
 import { ROLE } from 'src/common/enums/role.enum';
 
 export const GetUser = createParamDecorator(
@@ -19,3 +20,12 @@ export const GetUser = createParamDecorator(
 
 export const ROLES_KEY = 'roles';
 export const Roles = (...roles: ROLE[]) => SetMetadata(ROLES_KEY, roles);
+
+export const ParseOptionalBoolean = () =>
+  Transform(({ value }) => optionalBooleanMapper.get(String(value)));
+
+const optionalBooleanMapper = new Map([
+  ['undefined', undefined],
+  ['true', true],
+  ['false', false],
+]);

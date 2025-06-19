@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsNumber,
@@ -9,6 +10,8 @@ import {
 import { PartialType } from '@nestjs/mapped-types';
 import { PaginationQuery } from 'src/common/dtos/request.dto';
 import { INTERVIEW_SESSION_STATUS } from 'src/libs/constant/status';
+import { Type } from 'class-transformer';
+import { ParseOptionalBoolean } from 'src/decorator/customize';
 
 export class CreateInterviewSessionDto {
   @IsString()
@@ -82,7 +85,7 @@ export class SearchInterviewSessionRequest extends PaginationQuery {
   // @ApiPropertyOptional({ description: 'Lọc theo status của session' })
   @IsOptional()
   @IsEnum(INTERVIEW_SESSION_STATUS)
-  status?: INTERVIEW_SESSION_STATUS;
+  status?: INTERVIEW_SESSION_STATUS.UPCOMING;
 
   @IsOptional()
   @IsString()
@@ -91,4 +94,14 @@ export class SearchInterviewSessionRequest extends PaginationQuery {
   @IsOptional()
   @IsString()
   majorIds?: string;
+
+  @Type(() => Number)
+  @IsOptional()
+  @IsNumber()
+  slotDuration?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  @ParseOptionalBoolean()
+  isFree?: boolean;
 }

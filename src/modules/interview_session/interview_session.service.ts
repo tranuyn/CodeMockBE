@@ -303,6 +303,7 @@ export class InterviewSessionService {
   async search(query: SearchInterviewSessionRequest) {
     const qb = this.sessionRepo
       .createQueryBuilder('session')
+      .leftJoinAndSelect('session.interviewSlots', 'interviewSlots')
       .leftJoinAndSelect('session.mentor', 'mentor')
       .leftJoinAndSelect('session.requiredTechnologies', 'requiredTechnologies')
       .leftJoinAndSelect('session.majors', 'majors')
@@ -330,6 +331,20 @@ export class InterviewSessionService {
       const majorIdsArray = query.majorIds.split(',').map((id) => id.trim());
       if (majorIdsArray.length > 0) {
         qb.andWhere('majors.id IN (:...majorIds)', { majorIds: majorIdsArray });
+      }
+    }
+
+    if (query.slotDuration !== undefined) {
+      qb.andWhere('session.slotDuration = :slotDuration', {
+        slotDuration: query.slotDuration,
+      });
+    }
+
+    if (query.isFree !== undefined) {
+      if (query.isFree) {
+        qb.andWhere('session.sessionPrice = 0');
+      } else {
+        qb.andWhere('session.sessionPrice > 0');
       }
     }
 
