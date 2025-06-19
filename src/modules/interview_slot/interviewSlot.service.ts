@@ -21,6 +21,7 @@ import { SortOrder } from 'src/common/enums/sortOder';
 import { paginate } from 'src/libs/utils/paginate';
 import { InterviewSlotResultDto } from './dtos/result.dto';
 import { plainToInstance } from 'class-transformer';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class InterviewSlotService {
@@ -28,6 +29,9 @@ export class InterviewSlotService {
     @InjectRepository(InterviewSlot)
     private readonly interviewSlotRepo: Repository<InterviewSlot>,
     private userService: UserService,
+    @InjectRepository(Candidate)
+    private readonly candidateRepo: Repository<Candidate>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(dto: CreateInterviewSlotDto): Promise<InterviewSlot> {
@@ -181,67 +185,108 @@ export class InterviewSlotService {
     slotId: string,
     dto: RegisterInterviewSlotDto,
   ): Promise<InterviewSlot> {
-    const { candidateId, resumeUrl } = dto;
+    const { candidateId, resumeUrl, payByCodemockCoin } = dto;
 
-    const slot = await this.interviewSlotRepo.findOne({
-      where: { slotId },
-      relations: ['interviewSession'],
-    });
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    if (!slot) {
-      throw new NotFoundException(`Không tìm thấy slot với ID ${slotId}`);
+    try {
+      const slot = await queryRunner.manager.findOne(InterviewSlot, {
+        where: { slotId },
+        relations: ['interviewSession'],
+      });
+
+      if (!slot) {
+        throw new NotFoundException(`Không tìm thấy slot với ID ${slotId}`);
+      }
+
+      if (
+        slot.status !== INTERVIEW_SLOT_STATUS.AVAILABLE &&
+        !(
+          slot.status === INTERVIEW_SLOT_STATUS.WAITING &&
+          slot.candidateWaitToPay === candidateId
+        )
+      ) {
+        throw new BadRequestException(`Slot không khả dụng`);
+      }
+
+      const sessionId = slot.interviewSession.sessionId;
+      const existingSlot = await queryRunner.manager.findOne(InterviewSlot, {
+        where: {
+          candidate: { id: candidateId },
+          interviewSession: { sessionId },
+        },
+      });
+
+      if (existingSlot) {
+        throw new BadRequestException(
+          `Bạn đã đăng ký một slot trong session này rồi`,
+        );
+      }
+
+      const newSlotStart = new Date(slot.startTime);
+      const newSlotEnd = new Date(slot.endTime);
+
+      const candidateSlots = await queryRunner.manager.find(InterviewSlot, {
+        where: {
+          candidate: { id: candidateId },
+          status: INTERVIEW_SLOT_STATUS.BOOKED,
+        },
+        relations: ['interviewSession'],
+      });
+
+      const hasTimeConflict = candidateSlots.some((existing) => {
+        const existingStart = new Date(existing.startTime);
+        const existingEnd = new Date(existing.endTime);
+        return existingStart < newSlotEnd && existingEnd > newSlotStart;
+      });
+
+      if (hasTimeConflict) {
+        throw new BadRequestException(
+          'Bạn đã có một slot khác trùng thời gian với slot này.',
+        );
+      }
+
+      slot.candidate = { id: candidateId } as Candidate;
+      slot.status = INTERVIEW_SLOT_STATUS.BOOKED;
+
+      // ✅ Thêm dòng này để lưu resumeUrl nếu có
+      if (resumeUrl) {
+        slot.resumeUrl = resumeUrl;
+      }
+
+      if (payByCodemockCoin) {
+        const candidate = await queryRunner.manager.findOne(Candidate, {
+          where: { id: candidateId },
+        });
+
+        if (!candidate) {
+          throw new NotFoundException('Không tìm thấy ứng viên');
+        }
+
+        const price = slot.interviewSession.sessionPrice || 0;
+
+        if (candidate.coinBalance < price) {
+          throw new BadRequestException(
+            'Bạn không đủ coin để thanh toán slot này.',
+          );
+        }
+
+        candidate.coinBalance -= price;
+        await queryRunner.manager.save(candidate);
+      }
+      const savedSlot = await queryRunner.manager.save(slot);
+
+      // 8. Commit transaction
+      await queryRunner.commitTransaction();
+      return savedSlot;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
-
-    if (slot.status !== INTERVIEW_SLOT_STATUS.AVAILABLE) {
-      throw new BadRequestException(`Slot không khả dụng`);
-    }
-
-    const sessionId = slot.interviewSession.sessionId;
-    const existingSlot = await this.interviewSlotRepo.findOne({
-      where: {
-        candidate: { id: candidateId },
-        interviewSession: { sessionId },
-      },
-    });
-
-    if (existingSlot) {
-      throw new BadRequestException(
-        `Bạn đã đăng ký một slot trong session này rồi`,
-      );
-    }
-
-    const newSlotStart = new Date(slot.startTime);
-    const newSlotEnd = new Date(slot.endTime);
-
-    const candidateSlots = await this.interviewSlotRepo.find({
-      where: {
-        candidate: { id: candidateId },
-        status: INTERVIEW_SLOT_STATUS.BOOKED,
-      },
-      relations: ['interviewSession'],
-    });
-
-    const hasTimeConflict = candidateSlots.some((existing) => {
-      const existingStart = new Date(existing.startTime);
-      const existingEnd = new Date(existing.endTime);
-      return existingStart < newSlotEnd && existingEnd > newSlotStart;
-    });
-
-    if (hasTimeConflict) {
-      throw new BadRequestException(
-        'Bạn đã có một slot khác trùng thời gian với slot này.',
-      );
-    }
-
-    slot.candidate = { id: candidateId } as Candidate;
-    slot.status = INTERVIEW_SLOT_STATUS.BOOKED;
-
-    // ✅ Thêm dòng này để lưu resumeUrl nếu có
-    if (resumeUrl) {
-      slot.resumeUrl = resumeUrl;
-    }
-
-    return await this.interviewSlotRepo.save(slot);
   }
 
   async cancelSlotByCandidate(
@@ -274,6 +319,11 @@ export class InterviewSlotService {
       slot.candidate = null;
       slot.isPaid = false;
       slot.cancelReason = null;
+      const userExisting = this.userService.findOne(candidateId);
+      await this.userService.update(candidateId, {
+        coinBalance:
+          slot.interviewSession.sessionPrice + (await userExisting).coinBalance,
+      });
     } else {
       // Hủy trễ → vẫn giữ candidateId, đánh dấu vi phạm
       slot.status = INTERVIEW_SLOT_STATUS.CANCELED_LATE;

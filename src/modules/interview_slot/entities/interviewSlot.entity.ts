@@ -67,5 +67,5 @@ export class InterviewSlot {
   cancelReason: string;
 
   @Column({ nullable: true })
-  candidateWaitToPay: string;
+  candidateWaitToPay: string; // id of candidate process paying
 }

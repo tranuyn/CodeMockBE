@@ -67,7 +67,7 @@ export class MoMoPaymentService {
       // Default values
       const amount = paymentData.amount;
       const orderInfo = paymentData.orderInfo || 'pay with MoMo';
-      const redirectUrl = 'https://localhost:3000/check-payment'; // FE
+      const redirectUrl = 'http://localhost:3000/features/payment/checkout'; // FE
       const ipnUrl = 'http://localhost:8081/check-payment'; //BE
       const requestType = 'captureWallet';
       const extraData = paymentData.extraData || '';
@@ -121,6 +121,8 @@ export class MoMoPaymentService {
       const timeoutDuration = (1 * 60 + 45) * 60 * 1000; // 1 giờ 45 p
       const slot = await this.slotRepo.findOne({ where: { slotId } });
       slot.status = INTERVIEW_SLOT_STATUS.WAITING;
+      const parsedExtraData = JSON.parse(extraData);
+      slot.candidateWaitToPay = parsedExtraData.candidateId;
       await this.slotRepo.save(slot);
 
       setTimeout(async () => {
