@@ -228,6 +228,7 @@ export class InterviewSlotService {
   async cancelSlotByCandidate(
     slotId: string,
     candidateId: string,
+    cancelReason: string,
   ): Promise<InterviewSlot> {
     const slot = await this.interviewSlotRepo.findOne({
       where: { slotId },
@@ -253,9 +254,11 @@ export class InterviewSlotService {
       slot.status = INTERVIEW_SLOT_STATUS.AVAILABLE;
       slot.candidate = null;
       slot.isPaid = false;
+      slot.cancelReason = null;
     } else {
       // Hủy trễ → vẫn giữ candidateId, đánh dấu vi phạm
       slot.status = INTERVIEW_SLOT_STATUS.CANCELED_LATE;
+      slot.cancelReason = cancelReason;
 
       // Cộng warning_count cho user
       await this.userService.incrementWarningCount(candidateId);
