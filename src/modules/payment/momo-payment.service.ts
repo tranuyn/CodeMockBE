@@ -11,6 +11,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { InterviewSlot } from '../interview_slot/entities/interviewSlot.entity';
 import { Repository } from 'typeorm';
 import { IsNotEmpty, IsString } from 'class-validator';
+import { INTERVIEW_SLOT_STATUS } from 'src/libs/constant/status';
 
 export interface MoMoPaymentRequest {
   amount: string;
@@ -67,7 +68,7 @@ export class MoMoPaymentService {
       const amount = paymentData.amount;
       const orderInfo = paymentData.orderInfo || 'pay with MoMo';
       const redirectUrl = 'https://localhost:3000/check-payment'; // FE
-      const ipnUrl = 'http://localhost:8081/check-payment';
+      const ipnUrl = 'http://localhost:8081/check-payment'; //BE
       const requestType = 'captureWallet';
       const extraData = paymentData.extraData || '';
 
@@ -115,6 +116,22 @@ export class MoMoPaymentService {
           },
         ),
       );
+
+      const slotId = paymentData.orderInfo;
+      const timeoutDuration = (1 * 60 + 45) * 60 * 1000; // 1 giờ 45 p
+      const slot = await this.slotRepo.findOne({ where: { slotId } });
+      slot.status = INTERVIEW_SLOT_STATUS.WAITING;
+      await this.slotRepo.save(slot);
+
+      setTimeout(async () => {
+        if (slot && !slot.isPaid) {
+          slot.status = INTERVIEW_SLOT_STATUS.AVAILABLE;
+          await this.slotRepo.save(slot);
+          console.log(
+            `Slot ${slotId} has been canceled due to payment timeout`,
+          );
+        }
+      }, timeoutDuration);
 
       if (response.data.payUrl) {
         console.log('payUrl: ');
