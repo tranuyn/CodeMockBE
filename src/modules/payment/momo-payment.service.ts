@@ -121,6 +121,8 @@ export class MoMoPaymentService {
       const timeoutDuration = (1 * 60 + 45) * 60 * 1000; // 1 giờ 45 p
       const slot = await this.slotRepo.findOne({ where: { slotId } });
       slot.status = INTERVIEW_SLOT_STATUS.WAITING;
+      const parsedExtraData = JSON.parse(extraData);
+      slot.candidateWaitToPay = parsedExtraData.candidateId;
       await this.slotRepo.save(slot);
 
       setTimeout(async () => {

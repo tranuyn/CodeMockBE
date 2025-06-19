@@ -182,7 +182,13 @@ export class InterviewSlotService {
         throw new NotFoundException(`Không tìm thấy slot với ID ${slotId}`);
       }
 
-      if (slot.status !== INTERVIEW_SLOT_STATUS.AVAILABLE) {
+      if (
+        slot.status !== INTERVIEW_SLOT_STATUS.AVAILABLE &&
+        !(
+          slot.status === INTERVIEW_SLOT_STATUS.WAITING &&
+          slot.candidateWaitToPay === candidateId
+        )
+      ) {
         throw new BadRequestException(`Slot không khả dụng`);
       }
 
@@ -294,6 +300,11 @@ export class InterviewSlotService {
       slot.candidate = null;
       slot.isPaid = false;
       slot.cancelReason = null;
+      const userExisting = this.userService.findOne(candidateId);
+      await this.userService.update(candidateId, {
+        coinBalance:
+          slot.interviewSession.sessionPrice + (await userExisting).coinBalance,
+      });
     } else {
       // Hủy trễ → vẫn giữ candidateId, đánh dấu vi phạm
       slot.status = INTERVIEW_SLOT_STATUS.CANCELED_LATE;
