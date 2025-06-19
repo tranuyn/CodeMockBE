@@ -96,6 +96,10 @@ export class InterviewSlotService {
     const qb = this.interviewSlotRepo
       .createQueryBuilder('slot')
       .leftJoinAndSelect('slot.interviewSession', 'session')
+      .leftJoinAndSelect('session.mentor', 'mentor')
+      .leftJoinAndSelect('session.requiredTechnologies', 'requiredTechnologies')
+      .leftJoinAndSelect('session.majors', 'majors')
+      .leftJoinAndSelect('session.level', 'level')
       .leftJoinAndSelect('slot.feedback', 'feedback')
       .leftJoinAndSelect('slot.rating', 'rating')
       .leftJoinAndSelect('slot.candidate', 'candidate');
@@ -109,6 +113,21 @@ export class InterviewSlotService {
     qb.andWhere('slot.status = :status', {
       status: INTERVIEW_SLOT_STATUS.DONE,
     });
+
+    if (query.levelId) {
+      qb.andWhere('level.id = :levelId', { levelId: query.levelId });
+    }
+    if (query.majorIds) {
+      const majorIdsArray = query.majorIds.split(',').map((id) => id.trim());
+      if (majorIdsArray.length > 0) {
+        qb.andWhere('majors.id IN (:...majorIds)', { majorIds: majorIdsArray });
+      }
+    }
+    if (query.slotDuration !== undefined) {
+      qb.andWhere('session.slotDuration = :slotDuration', {
+        slotDuration: query.slotDuration,
+      });
+    }
 
     if (query.slotDuration !== undefined) {
       qb.andWhere('session.slotDuration = :slotDuration', {

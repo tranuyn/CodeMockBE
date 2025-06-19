@@ -1,10 +1,12 @@
+import { Expose } from 'class-transformer';
+
 export class FeedbackResultDto {
-  feedbackId: number;
-  strengths: string;
-  improvementAreas: string;
-  overallPerformance: string;
-  technicalScore: number;
-  communicationScore: number;
-  problemSolvingScore: number;
-  createAt: Date;
+  @Expose() feedbackId: number;
+  @Expose() strengths: string;
+  @Expose() improvementAreas: string;
+  @Expose() overallPerformance: string;
+  @Expose() technicalScore: number;
+  @Expose() communicationScore: number;
+  @Expose() problemSolvingScore: number;
+  @Expose() createAt: Date;
 }

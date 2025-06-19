@@ -53,8 +53,13 @@ export class RatingService {
     if (!existing) {
       throw new NotFoundException(`Rating with id ${id} not found`);
     }
+
+    // Kiểm tra nếu data là object rỗng
+    if (!data || Object.keys(data).length === 0) {
+      throw new Error('No data provided for update');
+    }
+
     await this.ratingRepo.update(id, data);
-    // Trả về rating sau khi update kèm relations
     return this.findOne(id);
   }
 

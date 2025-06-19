@@ -65,4 +65,7 @@ export class InterviewSlot {
 
   @Column({ type: 'text', nullable: true })
   cancelReason: string;
+
+  @Column({ nullable: true })
+  candidateWaitToPay: string;
 }

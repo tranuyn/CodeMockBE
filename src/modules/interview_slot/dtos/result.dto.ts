@@ -2,6 +2,7 @@ import { Expose, Type } from 'class-transformer';
 import { INTERVIEW_SLOT_STATUS } from 'src/libs/constant/status';
 import { FeedbackResultDto } from 'src/modules/feedback/dtos/feedback_result.dto';
 import { InterviewSessionResultDto } from 'src/modules/interview_session/dtos/result.dto';
+import { RatingResultDto } from 'src/modules/rating/rating-result.dto';
 import { UserResultDto } from 'src/modules/user/dto/CandidateResult.dto';
 
 export class InterviewSlotResultDto {
@@ -26,7 +27,10 @@ export class InterviewSlotResultDto {
   @Type(() => FeedbackResultDto)
   feedback?: FeedbackResultDto;
 
-  @Expose() rating?: number;
+  @Expose()
+  @Type(() => RatingResultDto)
+  rating?: RatingResultDto;
+
   @Expose()
   @Type(() => InterviewSessionResultDto)
   interviewSession: InterviewSessionResultDto;
