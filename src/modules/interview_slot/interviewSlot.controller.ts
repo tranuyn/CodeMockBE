@@ -93,4 +93,10 @@ export class InterviewSlotController {
       cancelReason,
     );
   }
+  @Public()
+  @Get(':id')
+  findById(@Param('id') id: string) {
+    return this.slotService.findById(id);
+  }
+
 }

@@ -83,7 +83,7 @@ export class InterviewSlotService {
     });
   }
 
-  async findOne(id: string): Promise<InterviewSlot> {
+  async findById(id: string): Promise<InterviewSlotResultDto> {
     const slot = await this.interviewSlotRepo.findOne({
       where: { slotId: id },
       relations: ['interviewSession', 'candidate', 'feedback', 'rating'],
@@ -93,7 +93,10 @@ export class InterviewSlotService {
       throw new NotFoundException(`Interview slot with ID ${id} not found`);
     }
 
-    return slot;
+    // Map InterviewSlot entity to InterviewSlotResultDto
+    return plainToInstance(InterviewSlotResultDto, slot, {
+      excludeExtraneousValues: true,
+    });
   }
 
   async searchSlot(query: SearchInterviewSlotRequest) {
